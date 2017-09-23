@@ -1,0 +1,106 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+    <link rel="import" href="../saved-requests-panel.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <saved-requests-panel></saved-requests-panel>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert, sinon */
+    suite('_exportItems()', function() {
+      var element;
+
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Fires export-requests event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('export-requests', spy);
+        var item = {id: 'test'};
+        element._exportItems([item]);
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('export-requests is cancelable', function(done) {
+        element.addEventListener('export-requests', function f(e) {
+          e.preventDefault();
+          element.removeEventListener('export-requests', f);
+          assert.isTrue(e.cancelable);
+          done();
+        });
+        var item = {id: 'test'};
+        element._exportItems([item]);
+      });
+
+      test('Event contains a list of requests', function(done) {
+        element.addEventListener('export-requests', function f(e) {
+          element.removeEventListener('export-requests', f);
+          assert.typeOf(e.detail.requests, 'array');
+          assert.equal(e.detail.requests[0]._id, 'test');
+          done();
+        });
+        var item = {_id: 'test'};
+        element._exportItems([item]);
+      });
+    });
+
+    suite('_onExportAll()', function() {
+      var element;
+
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Fires export-user-data event', function() {
+        var spy = sinon.spy();
+        element.addEventListener('export-user-data', spy);
+        element._onExportAll();
+        assert.isTrue(spy.calledOnce);
+      });
+
+      test('export-user-data is cancelable', function(done) {
+        element.addEventListener('export-user-data', function f(e) {
+          e.preventDefault();
+          element.removeEventListener('export-user-data', f);
+          assert.isTrue(e.cancelable);
+          done();
+        });
+        element._onExportAll();
+      });
+
+      test('Event contains a type property', function(done) {
+        element.addEventListener('export-user-data', function f(e) {
+          e.preventDefault();
+          element.removeEventListener('export-user-data', f);
+          assert.equal(e.detail.type, 'saved');
+          done();
+        });
+        element._onExportAll();
+      });
+    });
+    </script>
+  </body>
+</html>
