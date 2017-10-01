@@ -75,6 +75,7 @@ Custom property | Description | Default
     <style>
     :host {
       display: block;
+      position: relative;
       @apply --layout-vertical;
       @apply --saved-requests-panel;
     }
@@ -170,6 +171,10 @@ Custom property | Description | Default
 
     #requestDetailsContainer paper-fab {
       --paper-fab-background: var(--saved-requests-panel-fab-background-color, --primary-color);
+    }
+
+    tutorial-toast {
+      position: absolute;
     }
     </style>
     <div class="header">
