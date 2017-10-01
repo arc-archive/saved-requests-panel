@@ -1,3 +1,13 @@
+<a name="0.1.2"></a>
+## [0.1.2](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.1...0.1.2) (2017-10-01)
+
+
+### Update
+
+* Added positioning to the tutorial element. ([72d4db8c5a5f9cfbcd66efd50fed53c85b297f4c](https://github.com/advanced-rest-client/saved-requests-panel/commit/72d4db8c5a5f9cfbcd66efd50fed53c85b297f4c))
+
+
+
 <a name="0.1.1"></a>
 ## 0.1.1 (2017-09-23)
 
