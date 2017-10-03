@@ -404,10 +404,12 @@ Custom property | Description | Default
         return this._objectChangedSearch(e.detail);
       }
       var id = e.detail.oldId;
-      var index = this.items.findIndex(item => item._id === id);
-      if (index >= 0) {
-        this.set(['items', index], e.detail.request);
-        return;
+      if (this.items) {
+        var index = this.items.findIndex(item => item._id === id);
+        if (index >= 0) {
+          this.set(['items', index], e.detail.request);
+          return;
+        }
       }
       this._pushToItems(e.detail.request);
     },
@@ -429,10 +431,12 @@ Custom property | Description | Default
       if (!this._requestMatchFilter(request)) {
         return;
       }
-      var itemsIndex = this.items.findIndex(item => item._id === id);
-      if (itemsIndex > -1) {
-        this.set(['items', itemsIndex], request);
-        return;
+      if (this.items) {
+        var itemsIndex = this.items.findIndex(item => item._id === id);
+        if (itemsIndex > -1) {
+          this.set(['items', itemsIndex], request);
+          return;
+        }
       }
       this._pushToItems(request);
     },
