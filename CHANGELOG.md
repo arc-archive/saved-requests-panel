@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.3...0.1.4) (2017-10-03)
+
+
+### Update
+
+* Removed padding from bottom sheet style. ([4ae8de247f804d12787cbdbd78740d3ee6cb0909](https://github.com/advanced-rest-client/saved-requests-panel/commit/4ae8de247f804d12787cbdbd78740d3ee6cb0909))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.2...0.1.3) (2017-10-01)
 
