@@ -1,3 +1,13 @@
+<a name="0.1.6"></a>
+## [0.1.6](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.5...0.1.6) (2017-10-14)
+
+
+### Update
+
+* Removed `with-backdrop` property on bottom sheets and added styling option ([845fd7f20bce32b6775581d630cdbcce9ac3bbda](https://github.com/advanced-rest-client/saved-requests-panel/commit/845fd7f20bce32b6775581d630cdbcce9ac3bbda))
+
+
+
 <a name="0.1.5"></a>
 ## [0.1.5](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.4...0.1.5) (2017-10-03)
 
