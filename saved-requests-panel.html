@@ -190,7 +190,11 @@ Custom property | Description | Default
           <paper-listbox class="dropdown-content" id="mainMenuOptions">
             <paper-icon-item on-tap="_onExportAll">
               <iron-icon icon="arc:archive" item-icon></iron-icon>
-              Export all
+              Export all to file
+            </paper-icon-item>
+            <paper-icon-item on-tap="_onExportAllDrive" data-action="export-selected-drive">
+              <iron-icon icon="arc:drive-color" item-icon></iron-icon>
+              Export all to Google Drive
             </paper-icon-item>
             <paper-icon-item on-tap="_deleteAllClick">
               <iron-icon icon="arc:delete" item-icon></iron-icon>
@@ -756,16 +760,26 @@ Custom property | Description | Default
 
     // Handles the export event. Fires `export-project` custom event
     _onExport: function(e) {
-      this._exportItems(e.detail.items);
+      this._exportItems(e.detail.items, e.detail.destination);
     },
-    // Menu item handler to export all project data
+    // Menu item handler to export all project data to Drive
+    _onExportAllDrive: function() {
+      this._exportAll('drive');
+    },
+    // Menu item handler to export all project data to file
     _onExportAll: function() {
+      this._exportAll();
+    },
+
+    _exportAll: function(destination) {
+      destination = destination || 'file';
       this.$.mainMenu.opened = false;
       Polymer.RenderStatus.afterNextRender(this, function() {
         this.$.mainMenuOptions.selected = -1;
       });
       var event = this.fire('export-user-data', {
-        type: 'saved'
+        type: 'saved',
+        destination: destination
       }, {
         cancelable: true,
         composed: true
@@ -779,14 +793,17 @@ Custom property | Description | Default
         this.$.preparingDataToast.opened = false;
       });
     },
+
     /**
      * Dispatches the `export-project` event with relevant data.
      *
      * @param {Array} requests List of request to export with the project.
      */
-    _exportItems: function(requests) {
+    _exportItems: function(requests, destination) {
+      destination = destination || 'file';
       var event = this.fire('export-requests', {
-        requests: requests
+        requests: requests,
+        destination: destination
       }, {
         cancelable: true,
         composed: true

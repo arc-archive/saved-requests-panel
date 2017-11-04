@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "polymer": "Polymer/polymer#^1.9.2",
-    "saved-list-items": "advanced-rest-client/saved-list-items#^0.1.0",
+    "saved-list-items": "advanced-rest-client/saved-list-items#^0.2.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#<2",
     "paper-button": "PolymerElements/paper-button#<2",
     "iron-icon": "PolymerElements/iron-icon#<2",
@@ -41,7 +41,8 @@
     "bottom-sheet": "advanced-rest-client/bottom-sheet#^1.0.4",
     "paper-fab": "PolymerElements/paper-fab#<2",
     "saved-request-editor": "advanced-rest-client/saved-request-editor#^0.1.1",
-    "saved-request-detail": "advanced-rest-client/saved-request-detail#^0.1.1"
+    "saved-request-detail": "advanced-rest-client/saved-request-detail#^0.1.1",
+    "arc-project-selector": "advanced-rest-client/arc-project-selector#^0.1.5"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#1.0.0",
