@@ -270,6 +270,7 @@ Custom property | Description | Default
     <paper-toast id="requestProjectErrorToast" class="error-toast" text="Unable to update request detaile. See console for debug message."></paper-toast>
     <paper-toast id="projectDuplicateToast" class="error-toast" text="Project cannot contain duplicates. Change name of a request fires."></paper-toast>
     <paper-toast id="driveAuthRequired" class="error-toast" text="Authorization for Google Drive is required."></paper-toast>
+    <paper-toast id="driveSaved" text="Requests saved on Google Drive."></paper-toast>
     <paper-toast id="deleteToast" duration="7000">
       <paper-button class="revert-button" on-tap="revertDeleted">Revert</paper-button>
     </paper-toast>
@@ -836,6 +837,9 @@ Custom property | Description | Default
       this.$.preparingDataToast.opened = true;
       event.detail.result.then(() => {
         this.$.preparingDataToast.opened = false;
+        if (destination === 'drive') {
+          this.$.driveSaved.opened = true;
+        }
       });
     },
 
@@ -858,6 +862,11 @@ Custom property | Description | Default
         this.$.noExport.opened = true;
         return;
       }
+      event.detail.result.then(() => {
+        if (destination === 'drive') {
+          this.$.driveSaved.opened = true;
+        }
+      });
     },
     /**
      * Handler for the `list-items-search` event fired by the list view
