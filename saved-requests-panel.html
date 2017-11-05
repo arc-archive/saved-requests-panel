@@ -781,12 +781,12 @@ Custom property | Description | Default
       var items = e.detail.items;
       if (e.detail.destination === 'drive') {
         var context = this;
-        window.addEventListener('oauth-2-token-ready', function ready() {
-          window.removeEventListener('oauth-2-token-ready', ready);
+        window.addEventListener('google-signin-success', function ready() {
+          window.removeEventListener('google-signin-success', ready);
           context._exportItems(items, e.detail.destination);
         });
-        window.addEventListener('oauth-2-token-error', function ready() {
-          window.removeEventListener('oauth-2-token-error', ready);
+        window.addEventListener('google-signout', function ready() {
+          window.removeEventListener('google-signout', ready);
           context.$.driveAuthRequired.opened = true;
         });
         this.fire('google-autorize', {
@@ -799,12 +799,12 @@ Custom property | Description | Default
     // Menu item handler to export all project data to Drive
     _onExportAllDrive: function() {
       var context = this;
-      window.addEventListener('oauth-2-token-ready', function ready() {
-        window.removeEventListener('oauth-2-token-ready', ready);
+      window.addEventListener('google-signin-success', function ready() {
+        window.removeEventListener('google-signin-success', ready);
         context._exportAll('drive');
       });
-      window.addEventListener('oauth-2-token-error', function ready() {
-        window.removeEventListener('oauth-2-token-error', ready);
+      window.addEventListener('google-signout', function ready() {
+        window.removeEventListener('google-signout', ready);
         context.$.driveAuthRequired.opened = true;
       });
       this.fire('google-autorize', {
