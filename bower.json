@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "polymer": "Polymer/polymer#^1.9.2",
-    "saved-list-items": "advanced-rest-client/saved-list-items#^0.2.0",
+    "saved-list-items": "advanced-rest-client/saved-list-items#^0.3.0",
     "iron-flex-layout": "PolymerElements/iron-flex-layout#<2",
     "paper-button": "PolymerElements/paper-button#<2",
     "iron-icon": "PolymerElements/iron-icon#<2",
