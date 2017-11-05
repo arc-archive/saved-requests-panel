@@ -1,3 +1,13 @@
+<a name="0.2.3"></a>
+## [0.2.3](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.2...0.2.3) (2017-11-05)
+
+
+### Update
+
+* Adding default file name for export file. ([56c6383963648bc34cba2961774072329c6c92f2](https://github.com/advanced-rest-client/saved-requests-panel/commit/56c6383963648bc34cba2961774072329c6c92f2))
+
+
+
 <a name="0.2.2"></a>
 ## [0.2.2](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.1...0.2.2) (2017-11-05)
 
