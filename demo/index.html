@@ -138,6 +138,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
     });
+
+    window.addEventListener('google-autorize', function() {
+      document.body.dispatchEvent(new CustomEvent('oauth-2-token-ready', {bubbles: true}));
+    });
+    window.addEventListener('export-data', function(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve({});
+    });
+    window.addEventListener('google-drive-data-save', function(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve({});
+    });
   })(document.getElementById('app'));
   </script>
 </body>
