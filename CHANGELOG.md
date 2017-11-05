@@ -1,3 +1,17 @@
+<a name="0.2.7"></a>
+## [0.2.7](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.6...0.2.7) (2017-11-05)
+
+
+### Fic
+
+* Updated event handlers types for signin. ([adf68f6c201e0e107bb30598c385ee3bab1f1768](https://github.com/advanced-rest-client/saved-requests-panel/commit/adf68f6c201e0e107bb30598c385ee3bab1f1768))
+
+### Update
+
+* Added a proper way of handling events. ([e068ee10eeb22412b578ae01a65c8b04cdf24674](https://github.com/advanced-rest-client/saved-requests-panel/commit/e068ee10eeb22412b578ae01a65c8b04cdf24674))
+
+
+
 <a name="0.2.6"></a>
 ## [0.2.6](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.5...0.2.6) (2017-11-05)
 
