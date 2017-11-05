@@ -1,3 +1,14 @@
+<a name="0.2.5"></a>
+## [0.2.5](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.4...0.2.5) (2017-11-05)
+
+
+### Update
+
+* Added authorization before requesrting export to Drive. ([08b76f78320f3fe17bf766d09ec4ea69136fdac1](https://github.com/advanced-rest-client/saved-requests-panel/commit/08b76f78320f3fe17bf766d09ec4ea69136fdac1))
+* Updated data export dependency. Added visual confirmation for drive export. ([b6705bfc38a311b331c3a54a31fc5b3e200f10e9](https://github.com/advanced-rest-client/saved-requests-panel/commit/b6705bfc38a311b331c3a54a31fc5b3e200f10e9))
+
+
+
 <a name="0.2.4"></a>
 ## [0.2.4](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.3...0.2.4) (2017-11-05)
 
