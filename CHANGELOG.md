@@ -1,3 +1,15 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.7...0.2.1) (2017-11-05)
+
+
+### Update
+
+* Added adding to project option. Removed name change handler. ([7748f3c404685ec2871d8144671810afb931d11e](https://github.com/advanced-rest-client/saved-requests-panel/commit/7748f3c404685ec2871d8144671810afb931d11e))
+* Updated list view dependency version. ([296ab4a85155acab55551c2e473d3f3e76050f24](https://github.com/advanced-rest-client/saved-requests-panel/commit/296ab4a85155acab55551c2e473d3f3e76050f24))
+* Updated version of the list. Added Drive export. ([c8bfcfc17aa03f769a503f5bff47bd91c98c0620](https://github.com/advanced-rest-client/saved-requests-panel/commit/c8bfcfc17aa03f769a503f5bff47bd91c98c0620))
+
+
+
 <a name="0.1.7"></a>
 ## [0.1.7](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.1.6...0.1.7) (2017-10-14)
 
