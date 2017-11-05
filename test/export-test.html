@@ -128,7 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       setup(function() {
         element = fixture('basic');
         window.addEventListener('google-autorize', function() {
-          document.body.dispatchEvent(new CustomEvent('oauth-2-token-ready', {bubbles: true}));
+          document.body.dispatchEvent(new CustomEvent('google-signin-success', {bubbles: true}));
         });
       });
 
