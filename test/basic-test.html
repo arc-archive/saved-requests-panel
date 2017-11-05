@@ -388,51 +388,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
     });
 
-    suite('_nameChanged()', function() {
-      var element;
-      var event;
-      setup(function() {
-        element = fixture('basic');
-        event = {
-          detail: {
-            item: {
-              _id: 'test',
-              name: 'test-name'
-            }
-          }
-        };
-      });
-
-      test('Fires request-name-changed event', function() {
-        var spy = sinon.spy();
-        element.addEventListener('request-name-changed', spy);
-        element._nameChanged(event);
-        assert.isTrue(spy.calledOnce);
-      });
-
-      test('request-name-changed event is cancelable', function(done) {
-        element.addEventListener('request-name-changed', function f(e) {
-          e.preventDefault();
-          element.removeEventListener('request-name-changed', f);
-          assert.isTrue(e.cancelable);
-          done();
-        });
-        element._nameChanged(event);
-      });
-
-      test('Contains request detail', function(done) {
-        element.addEventListener('request-name-changed', function f(e) {
-          e.preventDefault();
-          element.removeEventListener('request-name-changed', f);
-          assert.deepEqual(e.detail.request, event.detail.item);
-          assert.equal(e.detail.type, 'saved-requests');
-          assert.equal(e.detail.name, 'test-name');
-          done();
-        });
-        element._nameChanged(event);
-      });
-    });
-
     suite('_prepareSaveRequestEvent()', function() {
       var element;
       var request;
