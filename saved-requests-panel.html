@@ -26,6 +26,7 @@ the License.
 <link rel="import" href="../openable-panel-behavior/openable-panel-behavior.html">
 <link rel="import" href="../app-pouchdb/pouchdb.html">
 <link rel="import" href="../arc-models/request-model.html">
+<link rel="import" href="../arc-models/project-model.html">
 <link rel="import" href="../app-pouchdb-quick-search/pouchdb-quick-search.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../tutorial-toast/tutorial-toast.html">
@@ -33,6 +34,9 @@ the License.
 <link rel="import" href="../saved-request-detail/saved-request-detail.html">
 <link rel="import" href="../saved-request-editor/saved-request-editor.html">
 <link rel="import" href="../paper-fab/paper-fab.html">
+<link rel="import" href="../arc-project-selector/arc-project-selector.html">
+<link rel="import" href="../uuid-generator/uuid-generator.html">
+
 <!--
 A saved requests panel for ARC.
 
@@ -97,6 +101,10 @@ Custom property | Description | Default
       @apply --arc-font-subhead;
     }
 
+    .project-selector-title {
+      margin-left: 0;
+    }
+
     paper-button > iron-icon {
       margin-left: 12px;
     }
@@ -157,7 +165,8 @@ Custom property | Description | Default
     }
 
     #requestDetailsContainer,
-    #requestEditorContainer {
+    #requestEditorContainer,
+    #projectSelectorContainer {
       min-width: 40%;
       max-width: 60%;
       left: 20%;
@@ -176,6 +185,16 @@ Custom property | Description | Default
 
     tutorial-toast {
       position: absolute;
+    }
+
+    .project-actions {
+      @apply --layout-horizontal;
+      @apply --layout-end-justified;
+      margin-top: 20px;
+    }
+
+    arc-project-selector {
+      margin-bottom: 52px;
     }
     </style>
     <div class="header">
@@ -215,13 +234,14 @@ Custom property | Description | Default
       <saved-list-items
         items=[[items]]
         empty="[[searchListEmpty]]"
+        projects="[[availableProjects]]"
         on-list-items-threshold="_listThreshold"
         on-list-items-delete="_onDelete"
         on-list-item-open="_onOpen"
-        on-list-item-name-changed="_nameChanged"
         on-list-items-export="_onExport"
         on-list-items-search="_onSearch"
-        on-list-item-details="_onDetails"></saved-list-items>
+        on-list-item-details="_onDetails"
+        on-list-items-add-project="_onAddToProject"></saved-list-items>
     </template>
     <tutorial-toast opened="[[dataUnavailable]]">
       Save a request using the <code class="command">[[_computeA11yButton('s')]]</code> keys on the request editor screen.
@@ -233,12 +253,22 @@ Custom property | Description | Default
     <bottom-sheet id="requestEditorContainer" on-iron-overlay-opened="_resizeEditorSheetContent">
       <saved-request-editor id="requestEditor" on-cancel-request-edit="_cancelRequestEdit" on-save-request="_saveRequestEdit"></saved-request-detail>
     </bottom-sheet>
+    <bottom-sheet id="projectSelectorContainer">
+      <h3 class="project-selector-title">Select project</h3>
+      <arc-project-selector id="projectSelector" projects="{{availableProjects}}"></arc-project-selector>
+      <div class="project-actions">
+        <paper-button data-action="cancel-add-project" on-tap="cancelAddProject">Cancel</paper-button>
+        <paper-button raised data-action="project-add" on-tap="_addSelectedProject">Add</paper-button>
+      </div>
+    </bottom-sheet>
     <paper-toast id="noModel" class="error-toast" text="Model not found. Please, report an issue."></paper-toast>
     <paper-toast id="errorToast" class="error-toast" duration="5000"></paper-toast>
     <paper-toast id="revertError" class="error-toast" text="Unable to revert changes. Please, report an issue."></paper-toast>
     <paper-toast id="noExport" class="error-toast" text="Export module not found. Please, report an issue."></paper-toast>
     <paper-toast id="preparingDataToast" text="Preparing data to export. This can take a moment." duration="0"></paper-toast>
     <paper-toast id="dataClearErrorToast" class="error-toast" text="Datasore delete error. Please report an issue"></paper-toast>
+    <paper-toast id="requestProjectErrorToast" class="error-toast" text="Unable to update request detaile. See console for debug message."></paper-toast>
+    <paper-toast id="projectDuplicateToast" class="error-toast" text="Project cannot contain duplicates. Change name of a request fires."></paper-toast>
     <paper-toast id="deleteToast" duration="7000">
       <paper-button class="revert-button" on-tap="revertDeleted">Revert</paper-button>
     </paper-toast>
@@ -255,6 +285,8 @@ Custom property | Description | Default
       </div>
     </paper-dialog>
     <request-model events-target="[[_eventSource]]"></request-model>
+    <project-model events-target="[[_eventSource]]"></project-model>
+    <uuid-generator></uuid-generator>
   </template>
   <script>
   Polymer({
@@ -662,22 +694,6 @@ Custom property | Description | Default
         cancelable: true
       });
       this.$.requestDetailsContainer.opened = false;
-    },
-    // Hanldes request name change.
-    _nameChanged: function(e) {
-      var request = e.detail.item;
-      var event = this.fire('request-name-changed', {
-        request: request,
-        name: request.name,
-        type: 'saved-requests'
-      }, {
-        cancelable: true,
-        composed: true
-      });
-      if (!event.defaultPrevented) {
-        this.$.noModel.opened = true;
-        return;
-      }
     },
     // Handles items delete event.
     _onDelete: function(e) {
@@ -1128,6 +1144,69 @@ Custom property | Description | Default
       this.fire('pick-google-drive-item', {}, {
         cancelable: true,
         composed: true
+      });
+    },
+    // Handler for adding requests to project event.
+    _onAddToProject: function(e) {
+      var requests = e.detail.items;
+      if (!requests || !requests.length) {
+        return;
+      }
+      this.$.projectSelectorContainer.opened = true;
+      this.__selectedToProject = requests;
+    },
+    // Cancels add9ing to project dialog
+    cancelAddProject: function() {
+      this.$.projectSelectorContainer.opened = false;
+      this.__selectedToProject = undefined;
+    },
+    // Adds selected requests to a project.
+    _addSelectedProject: function() {
+      this.$.projectSelectorContainer.opened = false;
+      var requests = this.__selectedToProject;
+      this.__selectedToProject = undefined;
+      if (!requests) {
+        throw new Error('Something is wrong...');
+      }
+      var selector = this.$$('arc-project-selector');
+      var model = this.$$('request-model');
+      var projectPromise;
+      if (selector.isNew) {
+        let project = {
+          name: selector.projectName,
+          order: 0,
+          _id: this.$$('uuid-generator').generate()
+        };
+        projectPromise = this.$$('project-model').update(project)
+        .then(response => {
+          return response._id;
+        });
+      } else {
+        projectPromise = Promise.resolve(selector.projectId);
+      }
+      return projectPromise
+      .then(projectId => {
+        let list = requests.map(request => {
+          if (request.legacyProject) {
+            request = Object.assign({}, request);
+            delete request._id;
+            delete request._rev;
+          }
+          request.legacyProject = projectId;
+          return request;
+        });
+        return model.updateBulk('saved-requests', list);
+      })
+      .then(result => {
+        var failure = result.find(item => !item.ok);
+        if (failure) {
+          this.$.projectDuplicateToast.opened = true;
+        }
+        return result;
+      })
+      .catch(cause => {
+        this.$.requestProjectErrorToast.opened = true;
+        throw cause;
       });
     }
   });
