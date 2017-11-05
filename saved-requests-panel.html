@@ -795,7 +795,8 @@ Custom property | Description | Default
       });
       var event = this.fire('export-user-data', {
         type: 'saved',
-        destination: destination
+        destination: destination,
+        file: 'arc-request-list-export.json'
       }, {
         cancelable: true,
         composed: true
@@ -819,7 +820,8 @@ Custom property | Description | Default
       destination = destination || 'file';
       var event = this.fire('export-requests', {
         requests: requests,
-        destination: destination
+        destination: destination,
+        file: 'arc-request-list-export.json'
       }, {
         cancelable: true,
         composed: true
