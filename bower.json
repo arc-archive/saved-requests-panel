@@ -1,7 +1,7 @@
 {
   "name": "saved-requests-panel",
   "description": "A saved requests panel for ARC",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "license": "Apache-2.0 OR CC-BY-4.0",
   "authors": [
     "The Advanced REST client authors <arc@mulesoft.com>"
@@ -34,7 +34,6 @@
     "paper-progress": "PolymerElements/paper-progress#<2",
     "paper-toast": "PolymerElements/paper-toast#<2",
     "arc-models": "advanced-rest-client/arc-models#^0.1.9",
-    "arc-data-export": "advanced-rest-client/arc-data-export#^0.1.5",
     "app-pouchdb-quick-search": "advanced-rest-client/app-pouchdb-quick-search#^1.0.5",
     "paper-dialog": "PolymerElements/paper-dialog#<2",
     "tutorial-toast": "advanced-rest-client/tutorial-toast#^0.1.1",
@@ -55,7 +54,8 @@
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0",
     "chance": "^1.0.11",
     "arc-demo-helpers": "advanced-rest-client/arc-demo-helpers#^1.0.18",
-    "request-saver": "advanced-rest-client/request-saver#^0.1.0"
+    "request-saver": "advanced-rest-client/request-saver#^0.1.0",
+    "arc-data-export": "advanced-rest-client/arc-data-export#^0.2.0"
   },
   "ignore": [
     "**/.*",
