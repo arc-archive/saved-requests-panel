@@ -1,3 +1,9 @@
+<a name="0.2.8"></a>
+## [0.2.8](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.7...0.2.8) (2017-11-05)
+
+
+
+
 <a name="0.2.7"></a>
 ## [0.2.7](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.6...0.2.7) (2017-11-05)
 
