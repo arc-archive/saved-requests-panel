@@ -1,3 +1,13 @@
+<a name="0.2.9"></a>
+## [0.2.9](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.8...0.2.9) (2017-12-15)
+
+
+### Fix
+
+* Fixed error thrown when trying to add a request ([3a18d7042679135037d08d8ba7c745b249ba66b0](https://github.com/advanced-rest-client/saved-requests-panel/commit/3a18d7042679135037d08d8ba7c745b249ba66b0))
+
+
+
 <a name="0.2.8"></a>
 ## [0.2.8](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.7...0.2.8) (2017-11-05)
 
