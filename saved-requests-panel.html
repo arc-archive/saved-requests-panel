@@ -413,13 +413,22 @@ Custom property | Description | Default
     observers: [
       '_processOnShow(_isOpened)'
     ],
-
-    attached: function() {
+    /**
+     * Replacemenet for attached callback to not attach listeners if the panel
+     * wasn't yet opened.
+     * This function is called automatically when the panel is rendered and opened
+     * for the first time.
+     */
+    _attachListeners: function() {
+      this.__listenersRegistered = true;
       this.listen(window, 'request-object-changed', '_handleObjectChanged');
       this.listen(window, 'request-object-deleted', '_handleObjectDeleted');
     },
 
     detached: function() {
+      if (!this.__listenersRegistered) {
+        return;
+      }
       this.unlisten(window, 'request-object-changed', '_handleObjectChanged');
       this.unlisten(window, 'request-object-deleted', '_handleObjectDeleted');
     },
@@ -517,11 +526,14 @@ Custom property | Description | Default
      * @param {Object} item Request object tp add.
      */
     _pushToItems: function(item) {
+      var view = this.$$('saved-list-items');
+      if (!view) {
+        return;
+      }
       var items = this.items || [];
       items.push(item);
       items.sort(this._sortFn);
       this.set('items', Array.from(items));
-      var view = this.$$('saved-list-items');
       view.refresh();
     },
 
@@ -529,6 +541,9 @@ Custom property | Description | Default
     _processOnShow: function(opened) {
       if (!opened) {
         return;
+      }
+      if (!this.__listenersRegistered) {
+        this._attachListeners();
       }
       var items = this.items;
       if (items && items.length) {
