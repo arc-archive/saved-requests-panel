@@ -29,6 +29,8 @@ the License.
 <link rel="import" href="../saved-request-editor/saved-request-editor.html">
 <link rel="import" href="../paper-fab/paper-fab.html">
 <link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
+<link rel="import" href="../projects-list-consumer-mixin/projects-list-consumer-mixin.html">
+<link rel="import" href="../paper-chip-input/paper-chip-input.html">
 <link rel="import" href="saved-panel-list.html">
 <!--
 A saved requests panel for ARC.
@@ -78,36 +80,26 @@ Custom property | Description | Default
       @apply --saved-requests-panel;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     .header {
       @apply --layout-horizontal;
       @apply --layout-center;
     }
 
     h2 {
-      margin-left: 16px;
       @apply --arc-font-headline;
       @apply --layout-flex;
     }
 
     h3 {
-      margin-left: 16px;
       @apply --arc-font-subhead;
-    }
-
-    .project-selector-title {
-      margin-left: 0;
-    }
-
-    paper-button > iron-icon {
-      margin-left: 12px;
     }
 
     paper-listbox iron-icon {
       color: rgba(0, 0, 0, 0.54);
-    }
-
-    [hidden] {
-      display: none !important;
     }
 
     paper-progress {
@@ -115,20 +107,13 @@ Custom property | Description | Default
       @apply --saved-requests-panel-loader;
     }
 
-    saved-list-items {
-      @apply --layout-flex;
-      @apply --saved-requests-panel-list;
+    saved-panel-list {
+      overflow: auto;
     }
 
     .revert-button {
       height: 38px;
       @apply --saved-requests-panel-toast-revert-button;
-    }
-
-    .secondary-action {
-      color: var(--primary-color);
-      height: 36px;
-      font-size: 14px;
     }
 
     #dataClearDialog {
@@ -176,18 +161,10 @@ Custom property | Description | Default
       --paper-fab-background: var(--saved-requests-panel-fab-background-color, var(--primary-color));
     }
 
-    tutorial-toast {
-      position: absolute;
-    }
-
     .project-actions {
       @apply --layout-horizontal;
       @apply --layout-end-justified;
       margin-top: 20px;
-    }
-
-    arc-project-selector {
-      margin-bottom: 52px;
     }
 
     .selection-options {
@@ -198,6 +175,10 @@ Custom property | Description | Default
 
     .spacer {
       @apply --layout-flex;
+    }
+
+    .project-selector-title {
+      margin-left: 0;
     }
     </style>
     <div class="header">
@@ -284,7 +265,11 @@ Custom property | Description | Default
     </bottom-sheet>
     <bottom-sheet id="projectSelectorContainer">
       <h3 class="project-selector-title">Select project</h3>
-      <arc-project-selector id="projectSelector" projects="{{availableProjects}}"></arc-project-selector>
+      <paper-chip-input
+        label="Select projects"
+        value="{{selectedProjects}}"
+        source="[[_computeProjectsAutocomplete(projects)]]"
+        chip-remove-icon="arc:close"></paper-chip-input>
       <div class="project-actions">
         <paper-button data-action="cancel-add-project" on-click="cancelAddProject">Cancel</paper-button>
         <paper-button raised data-action="project-add" on-click="_addSelectedProject">Add</paper-button>
@@ -323,8 +308,10 @@ Custom property | Description | Default
    * @memberof UiElements
    * @demo demo/index.html
    * @appliesMixin ArcComponents.RequestsListMixin
+   * @appliesMixin ArcComponents.ProjectsListConsumerMixin
    */
-  class SavedRequestsPanel extends ArcComponents.RequestsListMixin(Polymer.Element) {
+  class SavedRequestsPanel extends ArcComponents.ProjectsListConsumerMixin(
+    ArcComponents.RequestsListMixin(Polymer.Element)) {
     static get is() {
       return 'saved-requests-panel';
     }
@@ -416,6 +403,11 @@ Custom property | Description | Default
          * When true the details panel is rendered
          */
         detailsOpened: Boolean,
+        /**
+         * List of selected in the dialog project names.
+         * @type {Array<String>}
+         */
+        selectedProjects: Array
       };
     }
     constructor() {
@@ -1132,14 +1124,33 @@ Custom property | Description | Default
         return;
       }
       this.$.projectSelectorContainer.opened = true;
-      this.__selectedToProject = requests;
     }
     /**
      * Cancels adding to project dialog.
      */
     cancelAddProject() {
       this.$.projectSelectorContainer.opened = false;
-      this.__selectedToProject = undefined;
+    }
+    /**
+     * Updates requests objects with projects ids.
+     * @param {Array<Object>} requests List of requests to update
+     * @param {Array<String>} ids List of project IDs.
+     * @return {Array<Object>}
+     */
+    _updateRequestsProjects(requests, ids) {
+      requests.forEach((item) => {
+        if (!item.projects) {
+          item.projects = [];
+        }
+        if (item.legacyProject) {
+          if (item.projects.indexOf(item.legacyProject) === -1) {
+            item.projects[item.projects.length] = item.legacyProject;
+          }
+          delete item.legacyProject;
+        }
+        item.projects = item.projects.concat(ids);
+      });
+      return requests;
     }
     /**
      * Adds selected requests to a project.
@@ -1147,51 +1158,78 @@ Custom property | Description | Default
      */
     _addSelectedProject() {
       this.$.projectSelectorContainer.opened = false;
-      const requests = this.__selectedToProject;
-      this.__selectedToProject = undefined;
+      const requests = this.selectedItems;
       if (!requests) {
         throw new Error('Something is wrong...');
       }
-      const selector = this.$$('arc-project-selector');
-      const model = this.$$('request-model');
-      let projectPromise;
-      if (selector.isNew) {
-        let project = {
-          name: selector.projectName,
-          order: 0,
-          _id: this.$$('uuid-generator').generate()
-        };
-        projectPromise = this.$$('project-model').update(project)
-        .then((response) => {
-          return response._id;
-        });
+      const info = this._processSelectedProjectsInfo(this.selectedProjects);
+      let p;
+      if (info.add.length) {
+        p = this._createProjects(info.add, requests.map((i) => i._id));
       } else {
-        projectPromise = Promise.resolve(selector.projectId);
+        p = Promise.resolve();
       }
-      return projectPromise
-      .then((projectId) => {
-        let list = requests.map((request) => {
-          if (request.legacyProject) {
-            request = Object.assign({}, request);
-            delete request._id;
-            delete request._rev;
+      return p
+      .then((created) => this._prepareProjectsIdsList(created, info.existing))
+      .then((projectIds) => this._updateRequestsProjects(requests, projectIds))
+      .then((requests) => {
+        const e = new CustomEvent('request-objects-changed', {
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+          detail: {
+            type: 'saved',
+            requests
           }
-          request.legacyProject = projectId;
-          return request;
         });
-        return model.updateBulk('saved-requests', list);
-      })
-      .then((result) => {
-        const failure = result.find((item) => !item.ok);
-        if (failure) {
-          this.$.projectDuplicateToast.opened = true;
+        this.dispatchEvent(e);
+        if (!e.defaultPrevented) {
+          this.$.noModel.opened = true;
+          return Promise.reject(new Error('Model not found'));
         }
-        return result;
+        return e.detail.result;
       })
       .catch((cause) => {
         this.$.requestProjectErrorToast.opened = true;
         throw cause;
       });
+    }
+    /**
+     * Dispatches `project-update-bulk` custom event and returns event's
+     * promise.
+     * @param {Array<String>} names List of names.
+     * @param {Array<String>} requestIds List of request IDs to associate with the project.
+     * @return {Promise<Array<Object>>}
+     */
+    _createProjects(names, requestIds) {
+      const projects = names.map((name) => {
+        return {
+          name,
+          requests: requestIds
+        };
+      });
+      const e = new CustomEvent('project-update-bulk', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          projects
+        }
+      });
+      this.dispatchEvent(e);
+      if (!e.defaultPrevented) {
+        return Promise.reject('The project-model is not in the DOM.');
+      }
+      return e.detail.result;
+    }
+
+    _prepareProjectsIdsList(created, ids) {
+      ids = ids || [];
+      if (!created || !created.length) {
+        return ids;
+      }
+      const createdIds = created.map((item) => item._id);
+      return ids.concat(createdIds);
     }
   }
   window.customElements.define(SavedRequestsPanel.is, SavedRequestsPanel);

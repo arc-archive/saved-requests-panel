@@ -27,8 +27,45 @@ the License.
   <template>
     <style include="requests-list-styles">
     :host {
+      display: block;
+      position: relative;
+      @apply --layout-flex;
+      @apply --layout-vertical;
       @apply --saved-panel-list;
     };
+
+    iron-list {
+      flex: 1 1 auto;
+      @apply --saved-panel-list-list;
+    }
+
+    .url {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      font-size: 14px;
+      @apply --saved-panel-list-url-label;
+    }
+
+    http-method-label {
+      margin-right: 12px;
+      margin-bottom: 0;
+      @apply --saved-panel-list-method-label;
+    }
+
+    .secondary-action {
+      color: var(--primary-color);
+      height: 36px;
+      font-size: 14px;
+    }
+
+    :host([list-type="comfortable"]) .list-action-button {
+      height: 32px;
+    }
+
+    :host([list-type="compact"]) .list-action-button {
+      height: 24px;
+    }
     </style>
     <iron-list items="[[requests]]" id="list" selected-items="{{selectedItems}}" multi-selection>
       <template>
