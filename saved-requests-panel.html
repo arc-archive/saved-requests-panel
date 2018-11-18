@@ -1,6 +1,6 @@
 <!--
 @license
-Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
 Licensed under the Apache License, Version 2.0 (the "License"); you may not
 use this file except in compliance with the License. You may obtain a copy of
 the License at
@@ -31,45 +31,9 @@ the License.
 <link rel="import" href="../requests-list-mixin/requests-list-mixin.html">
 <link rel="import" href="../projects-list-consumer-mixin/projects-list-consumer-mixin.html">
 <link rel="import" href="../paper-chip-input/paper-chip-input.html">
+<link rel="import" href="../saved-list-mixin/saved-list-mixin.html">
 <link rel="import" href="saved-panel-list.html">
-<!--
-A saved requests panel for ARC.
 
-Contains complete UI to support saved requests view.
-
-It needs the following components to be present in the DOM to support full
-functionality:
-
--   arc-data-export - to prepare export object
--   chrome-file-export or any other file export element to save file to disk
-
-### Example
-```
-<saved-requests-panel></saved-requests-panel>
-```
-
-### Styling
-`<saved-requests-panel>` provides the following custom properties and mixins for styling:
-
-Custom property | Description | Default
-----------------|-------------|----------
-`--saved-requests-panel` | Mixin applied to the element | `{}`
-`--arc-font-headline` | Mixin applied to the header | `{}`
-`--arc-font-subhead` | Mixin applied to the subheader | `{}`
-`--saved-requests-panel-loader` | Mixin applied to the loader element | `{}`
-`--saved-requests-panel-list` | Mixin apllied to the list element | `{}`
-`--saved-requests-panel-toast-revert-button` | Mixin appllied to the rever button in the data delete confirmation toast | `{}`
-`--warning-primary-color` | Main color of the warning messages | `#FF7043`
-`--warning-contrast-color` | Contrast color for the warning color | `#fff`
-`--error-toast` | Mixin applied to the error toast | `{}`
-`--empty-info` | Mixin applied to the label rendered when no data is available. | `{}`
-`--saved-requests-panel-fab-background-color` | Color of the fab button in the details panel | `--primary-color`
-`--saved-requests-panel-bottom-sheet` | Mixin apllied to the `<bottom-sheet>` elements | `{}`
-
-@group UI Elements
-@element saved-requests-panel
-@demo demo/index.html
--->
 <dom-module id="saved-requests-panel">
   <template>
     <style>
@@ -133,7 +97,6 @@ Custom property | Description | Default
     }
 
     .empty-info {
-      margin-left: 16px;
       font-size: 16px;
       @apply --empty-info;
     }
@@ -208,7 +171,7 @@ Custom property | Description | Default
     </template>
     <template is="dom-if" if="[[dataUnavailable]]">
       <p class="empty-info">The requests list is empty.</p>
-      <p>Save a request using the <code class="command">[[_computeA11yButton('s')]]</code> keys on the request editor screen.</p>
+      <p>Save a request using the <code class="command">[[_computeA11yCommand('s')]]</code> keys on the request editor screen.</p>
     </template>
 
 
@@ -260,6 +223,7 @@ Custom property | Description | Default
     <bottom-sheet id="requestEditorContainer" on-iron-overlay-opened="_resizeSheetContent" opened="{{editorOpened}}">
       <saved-request-editor
         id="requestEditor"
+        no-auto-projects="[[noAutoProjects]]"
         on-cancel-request-edit="_cancelRequestEdit"
         on-save-request="_saveRequestEdit"></saved-request-detail>
     </bottom-sheet>
@@ -280,16 +244,11 @@ Custom property | Description | Default
     <paper-toast id="errorToast" class="error-toast" duration="5000"></paper-toast>
     <paper-toast id="revertError" class="error-toast" text="Unable to revert changes. Please, report an issue."></paper-toast>
     <paper-toast id="noExport" class="error-toast" text="Export module not found. Please, report an issue."></paper-toast>
-    <paper-toast id="dataClearErrorToast" class="error-toast" text="Datasore delete error. Please report an issue"></paper-toast>
+    <paper-toast id="dataClearErrorToast" class6class=""="error-toast" text="Datasore delete error. Please report an issue"></paper-toast>
     <paper-toast id="requestProjectErrorToast" class="error-toast" text="Unable to update request detaile. See console for debug message."></paper-toast>
-    <paper-toast id="projectDuplicateToast" class="error-toast" text="Project cannot contain duplicates. Change name of a request fires."></paper-toast>
-    <paper-toast id="driveAuthRequired" class="error-toast" text="Authorization for Google Drive is required."></paper-toast>
     <paper-toast id="driveSaved" text="Requests saved on Google Drive."></paper-toast>
     <paper-toast id="deleteToast" duration="7000">
       <paper-button class="revert-button" on-click="revertDeleted">Revert</paper-button>
-    </paper-toast>
-    <paper-toast id="indexBuildToast" duration="0" text="Building the index is taking more time than usual. Please, wait a moment.">
-      <paper-button class="revert-button" on-click="closeIndexBuildMessage">Close</paper-button>
     </paper-toast>
     <paper-dialog id="dataClearDialog" on-iron-overlay-closed="_onClearDialogResult">
       <h2>Danger zone</h2>
@@ -303,77 +262,46 @@ Custom property | Description | Default
   </template>
   <script>
   /**
+   * Saved requests panel for ARC.
+   *
+   * Contains complete UI to support saved requests view.
+   *
+   * ### Styling
+   *
+   * `<saved-requests-panel>` provides the following custom properties and mixins for styling:
+   *
+   * Custom property | Description | Default
+   * ----------------|-------------|----------
+   * `--saved-requests-panel` | Mixin applied to the element | `{}`
+   * `--arc-font-headline` | Mixin applied to the header | `{}`
+   * `--arc-font-subhead` | Mixin applied to the subheader | `{}`
+   * `--saved-requests-panel-loader` | Mixin applied to the loader element | `{}`
+   * `--saved-requests-panel-list` | Mixin apllied to the list element | `{}`
+   * `--saved-requests-panel-toast-revert-button` | Mixin appllied to the revert button in the data delete confirmation toast | `{}`
+   * `--warning-primary-color` | Main color of the warning messages | `#FF7043`
+   * `--warning-contrast-color` | Contrast color for the warning color | `#fff`
+   * `--error-toast` | Mixin applied to the error toast | `{}`
+   * `--empty-info` | Mixin applied to the label rendered when no data is available. | `{}`
+   * `--saved-requests-panel-fab-background-color` | Color of the fab button in the details panel | `--primary-color`
+   * `--saved-requests-panel-bottom-sheet` | Mixin apllied to the `<bottom-sheet>` elements | `{}`
+   *
    * @polymer
    * @customElement
    * @memberof UiElements
    * @demo demo/index.html
    * @appliesMixin ArcComponents.RequestsListMixin
    * @appliesMixin ArcComponents.ProjectsListConsumerMixin
+   * @appliesMixin ArcComponents.SavedListMixin
    */
-  class SavedRequestsPanel extends ArcComponents.ProjectsListConsumerMixin(
-    ArcComponents.RequestsListMixin(Polymer.Element)) {
+  class SavedRequestsPanel extends ArcComponents.SavedListMixin(
+    ArcComponents.ProjectsListConsumerMixin(
+      ArcComponents.RequestsListMixin(Polymer.Element))) {
     static get is() {
       return 'saved-requests-panel';
     }
 
     static get properties() {
       return {
-        /**
-         * True when the element is querying the database for the data.
-         */
-        querying: {
-          type: Boolean,
-          readOnly: true,
-          notify: true
-        },
-        /**
-         * Single page query limit.
-         */
-        pageLimit: {
-          type: Number,
-          value: 150
-        },
-        _queryStartKey: String,
-        _querySkip: Number,
-        /**
-         * Computed value.
-         * Database query options for pagination.
-         * Use `pageLimit` to set pagination limit.
-         */
-        queryOptions: {
-          type: Object,
-          computed: '_computeQueryOptions(pageLimit, _queryStartKey, _querySkip)'
-        },
-        /**
-         * Computed value. True if query ended and there's no results.
-         */
-        dataUnavailable: {
-          type: Boolean,
-          computed: '_computeDataUnavailable(hasRequests, querying, isSearch)'
-        },
-        /**
-         * When set this component is in search mode.
-         * This means that the list won't be loaded automatically and
-         * some operations not related to search are disabled.
-         */
-        isSearch: {
-          type: Boolean,
-          value: false
-        },
-        /**
-         * Computed value. True when the query has been performed and no items
-         * has been returned. It is different from `listHidden` where less
-         * conditions has to be checked. It is set to true when it doesn't
-         * have items, is not loading and is search.
-         */
-        searchListEmpty: {
-          type: Boolean,
-          computed: '_computeSearchListEmpty(hasRequests, loading, isSearch)'
-        },
-        /**
-         * When set it won't query for data automatically when attached to the DOM.
-         */
-        noAuto: Boolean,
         /**
          * List of requests that has been recently removed
          */
@@ -414,20 +342,10 @@ Custom property | Description | Default
       super();
       this._navigateHandler = this._navigateHandler.bind(this);
       this._searchHandler = this._searchHandler.bind(this);
-      this._dataImportHandler = this._dataImportHandler.bind(this);
-      this._onDatabaseDestroy = this._onDatabaseDestroy.bind(this);
     }
 
     connectedCallback() {
-      if (!this.type) {
-        this.type = 'saved';
-      }
       super.connectedCallback();
-      window.addEventListener('data-imported', this._dataImportHandler);
-      window.addEventListener('datastore-destroyed', this._onDatabaseDestroy);
-      if (!this.noAuto && !this.querying && !this.requests) {
-        this.loadNext();
-      }
       this.addEventListener('navigate', this._navigateHandler);
       const input = this.shadowRoot.querySelector('paper-input[type="search"]');
       input.inputElement.addEventListener('search', this._searchHandler);
@@ -435,57 +353,9 @@ Custom property | Description | Default
 
     disconnectedCallback() {
       super.disconnectedCallback();
-      window.removeEventListener('data-imported', this._dataImportHandler);
-      window.removeEventListener('datastore-destroyed', this._onDatabaseDestroy);
       const input = this.shadowRoot.querySelector('paper-input[type="search"]');
       input.inputElement.removeEventListener('search', this._searchHandler);
       this.removeEventListener('navigate', this._navigateHandler);
-    }
-    /**
-     * Computes pagination options.
-     * This resets pagination status.
-     * @param {Number} limit Items per page limit.
-     * @param {String} startKey Query start key
-     * @param {Number} skip Number of records to skip.
-     * @return {Object} Pagination options for PouchDB.
-     */
-    _computeQueryOptions(limit, startKey, skip) {
-      const result = {
-        limit,
-        descending: true,
-        // jscs:disable
-        include_docs: true
-        // jscs:enable
-      };
-      if (startKey) {
-        result.startkey = startKey;
-      }
-      if (skip) {
-        result.skip = skip;
-      }
-      return result;
-    }
-
-    /**
-     * Computes value for the `dataUnavailable` proeprty
-     * @param {Boolean} hasRequests [description]
-     * @param {Booelan} loading [description]
-     * @param {Boolean} isSearch [description]
-     * @return {Boolean}
-     */
-    _computeDataUnavailable(hasRequests, loading, isSearch) {
-      return !isSearch && !loading && !hasRequests;
-    }
-
-    /**
-     * Computes value for the `searchListEmpty` property
-     * @param {Boolean} hasRequests [description]
-     * @param {Booelan} loading [description]
-     * @param {Boolean} isSearch [description]
-     * @return {Boolean}
-     */
-    _computeSearchListEmpty(hasRequests, loading, isSearch) {
-      return !!isSearch && !loading && !hasRequests;
     }
     /**
      * Notifies the list that the resize event occurred.
@@ -521,205 +391,6 @@ Custom property | Description | Default
         this.detailsOpened = false;
       }
     }
-
-    /**
-     * Refreshes the data from the datastore.
-     * It resets the query options, clears requests and makes a query to the datastore.
-     */
-    refresh() {
-      this.reset();
-      this.loadNext();
-    }
-    /**
-     * Resets the state of the variables.
-     */
-    reset() {
-      if (this._queryStartKey) {
-        this._queryStartKey = undefined;
-      }
-      if (this._querySkip) {
-        this._querySkip = undefined;
-      }
-      if (this.isSearch) {
-        this.isSearch = false;
-      }
-      if (this.querying) {
-        this._setQuerying(false);
-      }
-      if (this.requests) {
-        this.set('requests', undefined);
-      }
-    }
-
-    /**
-     * Handler for `data-imported` cutom event.
-     * Refreshes data state.
-     */
-    _dataImportHandler() {
-      this.refresh();
-    }
-    /**
-     * Handler for the `datastore-destroyed` custom event.
-     * If one of destroyed databases is saved store then it refreshes the sate.
-     * @param {CustomEvent} e
-     */
-    _onDatabaseDestroy(e) {
-      let datastore = e.detail.datastore;
-      if (!datastore || !datastore.length) {
-        return;
-      }
-      if (typeof datastore === 'string') {
-        datastore = [datastore];
-      }
-      if (datastore.indexOf('saved-requests') === -1 &&
-        datastore.indexOf('saved') === -1 &&
-        datastore[0] !== 'all') {
-        return;
-      }
-      this.refresh();
-    }
-    /**
-     * Loads next page of results. It runs the task in a debouncer set to
-     * next render frame so it's safe to call it more than once at the time.
-     */
-    loadNext() {
-      if (this.isSearch) {
-        return;
-      }
-      if (this.__makingQuery) {
-        return;
-      }
-      this.__makingQuery = true;
-      Polymer.RenderStatus.afterNextRender(this, () => {
-        this.__makingQuery = false;
-        this._loadPage();
-      });
-    }
-    /**
-     * Appends array items to the `requests` property.
-     * It should be used instead of direct manipulation of the `items` array.
-     * @param {Array<Object>} requests List of requests to appenmd
-     */
-    _appendItems(requests) {
-      if (!requests || !requests.length) {
-        return;
-      }
-      const existing = this.requests;
-      if (!existing) {
-        this.set('requests', requests);
-        return;
-      }
-      requests.forEach((item) => this.push('requests', item));
-    }
-    /**
-     * Loads next page of results from the datastore.
-     * Pagination used here has been described in PouchDB pagination strategies
-     * document.
-     * @return {Promise}
-     */
-    _loadPage() {
-      if (this.isSearch) {
-        return Promise.resolve();
-      }
-      const e = this._dispatchListEvent();
-      if (!e.defaultPrevented) {
-        let msg = 'Request model not found.';
-        console.warn(msg);
-        return Promise.reject(new Error(msg));
-      }
-      this._setQuerying(true);
-      return e.detail.result
-      .then((response) => {
-        this._setQuerying(false);
-        if (response && response.rows.length > 0) {
-          // Set up pagination.
-          this._queryStartKey = response.rows[response.rows.length - 1].key;
-          if (!this._querySkip) {
-            this._querySkip = 1;
-          }
-          const res = this._processRequestsResponse(response.rows);
-          this._appendItems(res);
-          Polymer.RenderStatus.afterNextRender(this, () => {
-            if (this.notifyResize) {
-              this.notifyResize();
-            }
-          });
-        }
-      })
-      .catch((error) => {
-        this._setQuerying(false);
-        this._handleError(error);
-      });
-    }
-    /**
-     * Dispatches `request-list` custom event and returns the event.
-     * @return {CustomEvent}
-     */
-    _dispatchListEvent() {
-      const e = new CustomEvent('request-list', {
-        cancelable: true,
-        composed: true,
-        bubbles: true,
-        detail: {
-          queryOptions: this.queryOptions,
-          type: 'saved'
-        }
-      });
-      this.dispatchEvent(e);
-      return e;
-    }
-
-    _handleError(cause) {
-      if (this.querying) {
-        this._setQuerying(false);
-      }
-      console.warn('[Saved list error]', cause);
-      throw cause;
-    }
-
-    /**
-     * Prepares data to display in the view.
-     *
-     * @param {Object} items List of documents returned by the model.
-     * @return {Array} List of request to be passed to the list view.
-     */
-    _processRequestsResponse(items) {
-      if (!items || !items.length) {
-        return;
-      }
-      const list = [];
-      items.forEach((item) => {
-        if (!item) {
-          return;
-        }
-        if (item.doc) {
-          item = item.doc;
-        }
-        if (item._id.indexOf('_design') !== 0) {
-          list[list.length] = item;
-        }
-      });
-      list.sort(this._sortFn);
-      return list;
-    }
-    /**
-     * Sorts the query results by `updated` property.
-     * @param {Object} a
-     * @param {Object} b
-     * @return {Number}
-     */
-    _sortSavedResults(a, b) {
-      if (!a.name) {
-        return -1;
-      }
-      if (!b.name) {
-        return 1;
-      }
-      if (!a.name && !b.name) {
-        return 0;
-      }
-      return a.name.localeCompare(b.name);
-    }
     /**
      * Opens the request details applet with the request.
      * @param {CustomEvent} e
@@ -744,77 +415,18 @@ Custom property | Description | Default
       }));
       this.detailsOpened = false;
     }
-
+    /**
+     * Handler for search event from search input.
+     * @param {Event} e
+     */
     _searchHandler(e) {
       const {value} = e.target;
       this.query(value);
     }
     /**
-     * Dispatches `request-query` custom event to `request-model`
-     * to perform a query.
-     *
-     * @param {String} query The query to performs. Pass empty stirng
-     * (or nothing) to reset query state.
-     * @return {Promise} Resolved promise when the query ends.
+     * Handles items delete event from item click.
+     * @return {Promise}
      */
-    query(query) {
-      if (!query) {
-        if (this.isSearch) {
-          this.refresh();
-        }
-        return Promise.resolve();
-      }
-      this.isSearch = true;
-      this._setQuerying(true);
-      this.set('requests', undefined);
-      query = this._prepareQuery(query);
-      const e = this._dispatchQueryEvent(query);
-      if (!e.defaultPrevented) {
-        const msg = 'Model not found.';
-        console.warn(msg);
-        return Promise.reject(new Error(msg));
-      }
-      return e.detail.result
-      .then((result) => {
-        result = this._processRequestsResponse(result);
-        this._appendItems(result);
-        this._setQuerying(false);
-      })
-      .catch((error) => {
-        this._setQuerying(false);
-        this._handleError(error);
-      });
-    }
-    /**
-     * Dispatches `request-query` custom event.
-     * This event is handled by `request-mode` element to query the
-     * datastore for user search term.
-     * @param {String} q Query passed to event detail.
-     * @return {CustomEvent}
-     */
-    _dispatchQueryEvent(q) {
-      const e = new CustomEvent('request-query', {
-        cancelable: true,
-        bubbles: true,
-        composed: true,
-        detail: {
-          q,
-          type: 'saved'
-        }
-      });
-      this.dispatchEvent(e);
-      return e;
-    }
-
-    _prepareQuery(query) {
-      query = String(query);
-      query = query.toLowerCase();
-      if (query[0] === '_') {
-        query = query.substr(1);
-      }
-      return query;
-    }
-    // Handles items delete event.
     _deleteSelected() {
       this._closeSelectionMenu();
       const data = this.selectedItems;
@@ -823,7 +435,10 @@ Custom property | Description | Default
       }
       return this._delete(data);
     }
-    // Deletes a request from the details panel.
+    /**
+     * Deletes a request from the details panel.
+     * @return {Promise}
+     */
     _deleteRequestDetails() {
       const data = [this.$.requestDetails.request];
       this.detailsOpened = false;
@@ -833,22 +448,13 @@ Custom property | Description | Default
      * Performs a delete action of request items.
      *
      * @param {Array<Object>} deleted List of deleted items.
-     * @return {[type]} [description]
+     * @return {Promise}
      */
     _delete(deleted) {
-      const e = new CustomEvent('request-objects-deleted', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          type: 'saved',
-          items: deleted.map((item) => item._id)
-        }
-      });
-      this.dispatchEvent(e);
+      const e = this._dispatchDelete(deleted);
       if (!e.defaultPrevented) {
         this.$.noModel.opened = true;
-        return;
+        return Promise.reject(new Error('Model not found'));
       }
       return e.detail.result
       .then((updated) => {
@@ -873,6 +479,24 @@ Custom property | Description | Default
       });
     }
     /**
+     * Dispatches `request-objects-deleted` event.
+     * @param {Array<Object>} deleted List of requests to delete.
+     * @return {CustomEvent}
+     */
+    _dispatchDelete(deleted) {
+      const e = new CustomEvent('request-objects-deleted', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          type: this.type,
+          items: deleted.map((item) => item._id)
+        }
+      });
+      this.dispatchEvent(e);
+      return e;
+    }
+    /**
      * Restores removed requests.
      * It does nothing if `_latestDeleted` is not set or empty.
      *
@@ -884,16 +508,7 @@ Custom property | Description | Default
       if (!deleted || !deleted.length) {
         return Promise.resolve();
       }
-      const e = new CustomEvent('request-objects-undeleted', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          type: 'saved',
-          items: deleted
-        }
-      });
-      this.dispatchEvent(e);
+      const e = this._dispatchUndelete(deleted);
       if (!e.defaultPrevented) {
         this.$.noModel.opened = true;
         return Promise.reject(new Error('Model not found'));
@@ -903,6 +518,25 @@ Custom property | Description | Default
         this.$.revertError.opened = true;
         this._handleError(cause);
       });
+    }
+    /**
+     * Dispatches `request-objects-undeleted` event.
+     * @param {Array<Object>} items List of deleted requests. The list
+     * contains objects with `_id` and `_rev` properties.
+     * @return {CustomEvent}
+     */
+    _dispatchUndelete(items) {
+      const e = new CustomEvent('request-objects-undeleted', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          type: this.type,
+          items
+        }
+      });
+      this.dispatchEvent(e);
+      return e;
     }
     /**
      * Forces selection menu to close.
@@ -1103,7 +737,7 @@ Custom property | Description | Default
      * @param {String} key The key modifier for the command
      * @return {String} Keyboard command for the key.
      */
-    _computeA11yButton(key) {
+    _computeA11yCommand(key) {
       const isMac = navigator.platform.indexOf('Mac') !== -1;
       let cmd = '';
       if (isMac) {
