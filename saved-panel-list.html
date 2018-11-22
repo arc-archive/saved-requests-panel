@@ -29,6 +29,7 @@ the License.
     :host {
       display: block;
       position: relative;
+      @apply --arc-font-body1;
       @apply --layout-flex;
       @apply --layout-vertical;
       @apply --saved-panel-list;
@@ -54,7 +55,7 @@ the License.
     }
 
     .secondary-action {
-      color: var(--primary-color);
+      color: var(--saved-panel-list-secondary-action-color, var(--primary-color));
       height: 36px;
       font-size: 14px;
     }
@@ -103,6 +104,10 @@ the License.
    * Custom property | Description | Default
    * ----------------|-------------|----------
    * `--saved-panel-list` | Mixin applied to this elment | `{}`
+   * `--saved-panel-list-url-label` | Mixin applied to the list container | `{}`
+   * `--saved-panel-list-secondary-action-color` | Color of the secondary action button | `--primary-color`
+   * `--saved-panel-list-url-label` | Mixin applied to the URL label | `{}`
+   * `--saved-panel-list-method-label` | Mixin applied to the method label | `{}`
    *
    * @customElement
    * @polymer
@@ -240,7 +245,7 @@ the License.
         cancelable: true,
         detail: {
           base: 'request',
-          type: 'history',
+          type: 'saved',
           id
         }
       }));
