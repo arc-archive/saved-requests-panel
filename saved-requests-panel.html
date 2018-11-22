@@ -40,6 +40,7 @@ the License.
     :host {
       display: block;
       position: relative;
+      @apply --arc-font-body1;
       @apply --layout-vertical;
       @apply --saved-requests-panel;
     }
@@ -63,7 +64,22 @@ the License.
     }
 
     paper-listbox iron-icon {
-      color: rgba(0, 0, 0, 0.54);
+      color: var(--context-menu-item-color);
+    }
+
+    paper-listbox paper-icon-item {
+      color: var(--context-menu-item-color);
+      background-color: var(--context-menu-item-background-color);
+      cursor: pointer;
+    }
+
+    paper-listbox paper-icon-item:hover {
+      color: var(--context-menu-item-color-hover);
+      background-color: var(--context-menu-item-background-color-hover);
+    }
+
+    paper-listbox paper-icon-item:hover iron-icon {
+      color: var(--context-menu-item-color-hover);
     }
 
     paper-progress {
@@ -86,8 +102,8 @@ the License.
     }
 
     #dataClearDialog paper-button {
-      color: #fff;
-      background-color: transparent;
+      color: var(--warning-dialog-button-color, #fff);
+      background-color: var(--warning-dialog-button-background-color, transparent);
     }
 
     .error-toast {
@@ -108,9 +124,10 @@ the License.
     #requestDetailsContainer,
     #requestEditorContainer,
     #projectSelectorContainer {
-      min-width: 40%;
-      max-width: 60%;
-      left: 20%;
+      width: var(--bottom-sheet-width, 100%);
+      max-width: var(--bottom-sheet-max-width, 700px);
+      right: var(--saved-requests-panel-bottom-sheet-right, 40px);
+      left: var(--saved-requests-panel-bottom-sheet-left, auto);
       @apply --saved-requests-panel-bottom-sheet;
     }
 
@@ -225,7 +242,7 @@ the License.
         id="requestEditor"
         no-auto-projects="[[noAutoProjects]]"
         on-cancel-request-edit="_cancelRequestEdit"
-        on-save-request="_saveRequestEdit"></saved-request-detail>
+        on-save-request="_saveRequestEdit"></saved-request-editor>
     </bottom-sheet>
     <bottom-sheet id="projectSelectorContainer">
       <h3 class="project-selector-title">Select project</h3>
@@ -284,6 +301,10 @@ the License.
    * `--empty-info` | Mixin applied to the label rendered when no data is available. | `{}`
    * `--saved-requests-panel-fab-background-color` | Color of the fab button in the details panel | `--primary-color`
    * `--saved-requests-panel-bottom-sheet` | Mixin apllied to the `<bottom-sheet>` elements | `{}`
+   * `--context-menu-item-color` | Color of the dropdown menu items | ``
+   * `--context-menu-item-background-color` | Background olor of the dropdown menu items | ``
+   * `--context-menu-item-color-hover` | Color of the dropdown menu items when hovering | ``
+   * `--context-menu-item-background-color-hover` | Background olor of the dropdown menu items when hovering | ``
    *
    * @polymer
    * @customElement
