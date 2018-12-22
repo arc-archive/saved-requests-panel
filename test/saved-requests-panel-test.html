@@ -12,6 +12,7 @@
   <link rel="import" href="../../arc-models/request-model.html">
   <link rel="import" href="../../arc-models/project-model.html">
   <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+  <link rel="import" href="../../neon-animation/web-animations.html">
   <link rel="import" href="../saved-requests-panel.html">
 </head>
 
@@ -21,6 +22,7 @@
       <saved-requests-panel no-auto no-auto-projects></saved-requests-panel>
     </template>
   </test-fixture>
+
   <test-fixture id="Models">
     <template>
       <request-model></request-model>
@@ -401,6 +403,18 @@
       return p;
     });
 
+    test('Opens model error toast if the event is not handled', function() {
+      element.addEventListener('request-objects-deleted', function f(e) {
+        element.removeEventListener('request-objects-deleted', f);
+        e.stopImmediatePropagation();
+      });
+      return element._delete(element.requests.slice(0, 2))
+      .catch(() => {
+        const toast = element.shadowRoot.querySelector('#noModel');
+        assert.isTrue(toast.opened);
+      });
+    });
+
     test('Sets _latestDeleted', () => {
       return element._delete(element.requests.slice(0, 2))
       .then(() => {
@@ -422,6 +436,13 @@
       return element._delete(element.requests.slice(0, 2))
       .then(() => {
         assert.isTrue(element.$.deleteToast.opened);
+      });
+    });
+
+    test('Deletes single request', () => {
+      return element._delete(element.requests.slice(0, 1))
+      .then(() => {
+        assert.equal(element.$.deleteToast.text, 'The request has been removed.');
       });
     });
   });
@@ -510,7 +531,7 @@
     });
   });
 
-  suite.only('revertDeleted()', () => {
+  suite('revertDeleted()', () => {
     teardown(() => {
       return DataGenerator.destroySavedRequestData();
     });
@@ -560,6 +581,29 @@
       })
       .then(() => {
         assert.equal(element.requests.length, sizeBefore);
+      });
+    });
+
+    test('Opens model error toast if the event is not handled', function() {
+      element._latestDeleted = [{}];
+      element.addEventListener('request-objects-undeleted', function f(e) {
+        element.removeEventListener('request-objects-undeleted', f);
+        e.stopImmediatePropagation();
+      });
+      return element.revertDeleted()
+      .catch(() => {
+        const toast = element.shadowRoot.querySelector('#noModel');
+        assert.isTrue(toast.opened);
+      });
+    });
+
+    test('Opens revert error toast if there\'s an error', function() {
+      element._latestDeleted = [{}];
+      element._handleError = () => {};
+      return element.revertDeleted()
+      .catch(() => {
+        const toast = element.shadowRoot.querySelector('#revertError');
+        assert.isTrue(toast.opened);
       });
     });
   });
@@ -630,6 +674,638 @@
         const list = element.shadowRoot.querySelector('.selection-options');
         assert.isFalse(list.hasAttribute('hidden'));
       });
+    });
+  });
+
+  suite('_closeSelectionMenu()', () => {
+    let element;
+    let list;
+    setup(() => {
+      element = fixture('Basic');
+      list = [];
+      for (let i = 0; i < 5; i++) {
+        list[i] = {
+          _id: chance.guid({version: 5}),
+          _rev: chance.guid({version: 5})
+        };
+      }
+    });
+
+    test('Does nothing when menu is not in the DOM', () => {
+      element._closeSelectionMenu();
+      // no error
+    });
+
+    test('Closes the menu', (done) => {
+      element.requests = list;
+      element.selectedItems = list;
+      flush(() => {
+        const menu = element.shadowRoot.querySelector('#savedListMenu');
+        menu.opened = true;
+        element._closeSelectionMenu();
+        assert.isFalse(menu.opened);
+        done();
+      });
+    });
+
+    test('Re-sets list selection', (done) => {
+      element.requests = list;
+      element.selectedItems = list;
+      flush(() => {
+        const menu = element.shadowRoot.querySelector('#savedListMenuOptions');
+        menu.selected = 1;
+        element._closeSelectionMenu();
+        assert.equal(menu.selected, -1);
+        done();
+      });
+    });
+  });
+
+  suite('_exportSelected()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calles _exportItems() with "file" argument', () => {
+      const spy = sinon.spy(element, '_exportItems');
+      element._exportSelected();
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], 'file');
+    });
+  });
+
+  suite('_exportSelectedDrive()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calles _exportItems() with "drive" argument', () => {
+      const spy = sinon.spy(element, '_exportItems');
+      element._exportSelectedDrive();
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], 'drive');
+    });
+  });
+
+  suite('_onExportAllDrive()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calles _exportAll() with "drive" argument', () => {
+      const spy = sinon.spy(element, '_exportAll');
+      element._onExportAllDrive();
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], 'drive');
+    });
+
+    test('Calles _closeMainMenu()', () => {
+      const spy = sinon.spy(element, '_closeMainMenu');
+      element._onExportAllDrive();
+      assert.isTrue(spy.called);
+    });
+  });
+
+  suite('_onExportAll()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calles _exportAll() with "file" argument', () => {
+      const spy = sinon.spy(element, '_exportAll');
+      element._onExportAll();
+      assert.isTrue(spy.called);
+      assert.equal(spy.args[0][0], 'file');
+    });
+
+    test('Calles _closeMainMenu()', () => {
+      const spy = sinon.spy(element, '_closeMainMenu');
+      element._onExportAll();
+      assert.isTrue(spy.called);
+    });
+  });
+
+  suite('_closeMainMenu()', () => {
+    let element;
+    let list;
+    setup(() => {
+      element = fixture('Basic');
+      list = [];
+      for (let i = 0; i < 5; i++) {
+        list[i] = {
+          _id: chance.guid({version: 5}),
+          _rev: chance.guid({version: 5})
+        };
+      }
+    });
+
+    test('Closes the main menu', (done) => {
+      element.requests = list;
+      flush(() => {
+        const menu = element.shadowRoot.querySelector('#mainMenu');
+        menu.opened = true;
+        element._closeMainMenu();
+        assert.isFalse(menu.opened);
+        done();
+      });
+    });
+
+    test('Re-sets list selection', (done) => {
+      element.requests = list;
+      flush(() => {
+        const menu = element.shadowRoot.querySelector('#mainMenuOptions');
+        menu.selected = 1;
+        element._closeMainMenu();
+        assert.equal(menu.selected, -1);
+        done();
+      });
+    });
+  });
+
+  suite('_dispatchExportData()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Dispatches "export-data" event', () => {
+      const spy = sinon.spy();
+      element.addEventListener('export-data', spy);
+      element._dispatchExportData();
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const result = element._dispatchExportData();
+      assert.typeOf(result, 'customevent');
+    });
+
+    test('Event is cancelable', () => {
+      const result = element._dispatchExportData();
+      assert.isTrue(result.cancelable);
+    });
+
+    test('Event is composed', () => {
+      const result = element._dispatchExportData();
+      assert.isTrue(result.composed);
+    });
+
+    test('Event bubbles', () => {
+      const result = element._dispatchExportData();
+      assert.isTrue(result.bubbles);
+    });
+
+    test('Event has detail object', () => {
+      const result = element._dispatchExportData();
+      assert.typeOf(result.detail, 'object');
+    });
+
+    test('Detail has type', () => {
+      const result = element._dispatchExportData();
+      assert.equal(result.detail.type, 'arc-export');
+    });
+
+    test('Detail has destination', () => {
+      const result = element._dispatchExportData('test');
+      assert.equal(result.detail.destination, 'test');
+    });
+
+    test('Detail has file', () => {
+      const result = element._dispatchExportData();
+      assert.equal(result.detail.file, 'arc-saved-export.json');
+    });
+
+    test('Detail has kind', () => {
+      const result = element._dispatchExportData();
+      assert.equal(result.detail.kind, 'ARC#SavedExport');
+    });
+
+    test('Detail has data with "requests"', () => {
+      const result = element._dispatchExportData('test', true);
+      assert.typeOf(result.detail.data, 'object');
+      assert.isTrue(result.detail.data.requests);
+    });
+  });
+
+  suite('_exportAll()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Opens error toast when export not found', (done) => {
+      flush(() => {
+        element._exportAll('file');
+        const toast = element.shadowRoot.querySelector('#noExport');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+
+    test('Opens drive confirmation toast', (done) => {
+      element.addEventListener('export-data', function f(e) {
+        element.removeEventListener('export-data', f);
+        e.preventDefault();
+        e.detail.result = Promise.resolve();
+      });
+      element._exportAll('drive');
+      flush(() => {
+        const toast = element.shadowRoot.querySelector('#driveSaved');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+  });
+
+  suite('_exportItems()', () => {
+    let element;
+    let list;
+    setup(() => {
+      element = fixture('Basic');
+      list = [];
+      for (let i = 0; i < 5; i++) {
+        list[i] = {
+          _id: chance.guid({version: 5}),
+          _rev: chance.guid({version: 5})
+        };
+      }
+    });
+
+    test('Skips event dispatch when no selection', () => {
+      const spy = sinon.spy();
+      element.addEventListener('export-data', spy);
+      element._exportItems('file');
+      assert.isFalse(spy.called);
+    });
+
+    test('Dispatches export event when has selection', () => {
+      element.requests = list;
+      element.selectedItems = list;
+      const spy = sinon.spy();
+      element.addEventListener('export-data', spy);
+      element._exportItems('file');
+      assert.isTrue(spy.called);
+    });
+
+    test('Opens error toast when export not found', (done) => {
+      element.requests = list;
+      element.selectedItems = list;
+      flush(() => {
+        element._exportItems('file');
+        const toast = element.shadowRoot.querySelector('#noExport');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+
+    test('Opens drive confirmation toast', (done) => {
+      element.addEventListener('export-data', function f(e) {
+        element.removeEventListener('export-data', f);
+        e.preventDefault();
+        e.detail.result = Promise.resolve();
+      });
+      element.requests = list;
+      element.selectedItems = list;
+      element._exportItems('drive');
+      flush(() => {
+        const toast = element.shadowRoot.querySelector('#driveSaved');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+  });
+
+  suite('_deleteAllClick()', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      flush(() => done());
+    });
+
+    test('Closes main menu', () => {
+      const menu = element.shadowRoot.querySelector('#mainMenu');
+      menu.opened = true;
+      element._deleteAllClick();
+      assert.isFalse(menu.opened);
+    });
+
+    test('Opens data clear dialog', () => {
+      const dialog = element.shadowRoot.querySelector('#dataClearDialog');
+      element._deleteAllClick();
+      assert.isTrue(dialog.opened);
+    });
+  });
+
+  suite('_dispatchDeleteModel()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Dispatches "destroy-model" event', () => {
+      const spy = sinon.spy();
+      element.addEventListener('destroy-model', spy);
+      element._dispatchDeleteModel();
+      assert.isTrue(spy.called);
+    });
+
+    test('Returns the event', () => {
+      const result = element._dispatchDeleteModel();
+      assert.typeOf(result, 'customevent');
+    });
+
+    test('Event is cancelable', () => {
+      const result = element._dispatchDeleteModel();
+      assert.isTrue(result.cancelable);
+    });
+
+    test('Event is composed', () => {
+      const result = element._dispatchDeleteModel();
+      assert.isTrue(result.composed);
+    });
+
+    test('Event bubbles', () => {
+      const result = element._dispatchDeleteModel();
+      assert.isTrue(result.bubbles);
+    });
+
+    test('Event has detail object', () => {
+      const result = element._dispatchDeleteModel();
+      assert.typeOf(result.detail, 'object');
+    });
+
+    test('Detail has models', () => {
+      const result = element._dispatchDeleteModel();
+      assert.typeOf(result.detail.models, 'array');
+    });
+
+    test('Models has "saved" item', () => {
+      const result = element._dispatchDeleteModel();
+      assert.deepEqual(result.detail.models, ['saved']);
+    });
+  });
+
+  suite('_clearDatastore()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Opens error toast when model is not found', (done) => {
+      flush(() => {
+        element._handleError = () => {};
+        element._clearDatastore();
+        const toast = element.shadowRoot.querySelector('#dataClearErrorToast');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+
+    test('Throws error when no model', () => {
+      assert.throws(() => {
+        element._clearDatastore();
+      }, 'Model not found.');
+    });
+
+    test('Opens error when model delete error', (done) => {
+      element._handleError = () => {};
+      element.addEventListener('destroy-model', function f(e) {
+        element.removeEventListener('destroy-model', f);
+        e.detail.result = [Promise.reject(new Error('test'))];
+      });
+      element._clearDatastore();
+      flush(() => {
+        const toast = element.shadowRoot.querySelector('#dataClearErrorToast');
+        assert.isTrue(toast.opened);
+        done();
+      });
+    });
+  });
+
+  suite('_onClearDialogResult()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Does nothing when dialog is not confirmed', () => {
+      const spy = sinon.spy(element, '_clearDatastore');
+      element._onClearDialogResult({
+        detail: {
+          confirmed: false
+        }
+      });
+      assert.isFalse(spy.called);
+    });
+
+    test('Calls _clearDatastore() when confirmed', () => {
+      const spy = sinon.spy(element, '_clearDatastore');
+      element.addEventListener('destroy-model', function f(e) {
+        element.removeEventListener('destroy-model', f);
+        e.detail.result = [Promise.resolve()];
+      });
+      element._onClearDialogResult({
+        detail: {
+          confirmed: true
+        }
+      });
+      assert.isTrue(spy.called);
+    });
+  });
+
+  suite('_editRequestDetails()', () => {
+    let element;
+    let request;
+    setup((done) => {
+      element = fixture('Basic');
+      flush(() => {
+        request = DataGenerator.generateSavedItem();
+        const details = element.shadowRoot.querySelector('#requestDetails');
+        details.request = request;
+        element.detailsOpened = true;
+        done();
+      });
+    });
+
+    test('Closes request details dialog', () => {
+      element._editRequestDetails();
+      assert.isFalse(element.detailsOpened);
+    });
+
+    test('Opens request editor dialog', () => {
+      element._editRequestDetails();
+      assert.isTrue(element.editorOpened);
+    });
+
+    test('Clears request on detail dialog', () => {
+      element._editRequestDetails();
+      const details = element.shadowRoot.querySelector('#requestDetails');
+      assert.isUndefined(details.request);
+    });
+
+    test('Sets request on editor dialog', () => {
+      element._editRequestDetails();
+      const editor = element.shadowRoot.querySelector('#requestEditor');
+      assert.typeOf(editor.request, 'object');
+    });
+
+    test('Set request is a shallow copy', () => {
+      element._editRequestDetails();
+      const editor = element.shadowRoot.querySelector('#requestEditor');
+      editor.request.url = 'test';
+      assert.notEqual(request.url, 'test');
+    });
+  });
+
+  suite('_cancelRequestEdit()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element.editorOpened = true;
+    });
+
+    test('Closes editor dialog', () => {
+      element._cancelRequestEdit();
+      assert.isFalse(element.editorOpened);
+    });
+  });
+
+  suite('_saveRequestEdit()', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      element.editorOpened = true;
+      flush(() => {
+        const editor = element.shadowRoot.querySelector('#requestEditor');
+        editor.request = DataGenerator.generateSavedItem();
+        done();
+      });
+    });
+
+    test('Closes editor dialog', () => {
+      element._saveRequestEdit();
+      assert.isFalse(element.editorOpened);
+    });
+
+    test('Clears request from the editor', () => {
+      element._saveRequestEdit();
+      const editor = element.shadowRoot.querySelector('#requestEditor');
+      assert.isUndefined(editor.request);
+    });
+  });
+
+  suite('_projectSelected()', () => {
+    let element;
+    let list;
+    setup((done) => {
+      element = fixture('Basic');
+      list = DataGenerator.generateRequests();
+      element.requests = list;
+      flush(() => {
+        const node = element.shadowRoot.querySelector('#projectSelectorContainer');
+        node.opened = false;
+        done();
+      });
+    });
+
+    test('Closes selection menu', () => {
+      const spy = sinon.spy(element, '_closeSelectionMenu');
+      element._projectSelected();
+      assert.isTrue(spy.called);
+    });
+
+    test('Does nothing when no selection', () => {
+      element._projectSelected();
+      const node = element.shadowRoot.querySelector('#projectSelectorContainer');
+      assert.isFalse(node.opened);
+    });
+
+    test('Opens project selector', () => {
+      element.selectedItems = list;
+      element._projectSelected();
+      const node = element.shadowRoot.querySelector('#projectSelectorContainer');
+      assert.isTrue(node.opened);
+    });
+  });
+
+  suite('cancelAddProject()', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      flush(() => {
+        const node = element.shadowRoot.querySelector('#projectSelectorContainer');
+        node.opened = true;
+        done();
+      });
+    });
+
+    test('Closes project selector', () => {
+      element.cancelAddProject();
+      const node = element.shadowRoot.querySelector('#projectSelectorContainer');
+      assert.isFalse(node.opened);
+    });
+  });
+
+  suite('_prepareProjectsIdsList()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Returns empty array when no arguments', () => {
+      const result = element._prepareProjectsIdsList();
+      assert.typeOf(result, 'array');
+      assert.lengthOf(result, 0);
+    });
+
+    test('Returns passed "ids" when no "created"', () => {
+      const result = element._prepareProjectsIdsList([], ['test']);
+      assert.deepEqual(result, ['test']);
+    });
+
+    test('Adds ids from created', () => {
+      const result = element._prepareProjectsIdsList([{_id: 'created'}], ['test']);
+      assert.deepEqual(result, ['test', 'created']);
+    });
+  });
+
+  suite('_updateRequestsProjects()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Creates "projects" property', () => {
+      const result = element._updateRequestsProjects([{}], ['test']);
+      assert.typeOf(result[0].projects, 'array');
+      assert.deepEqual(result[0].projects, ['test']);
+    });
+
+    test('Adds "legacyProject" to "projects"', () => {
+      const result = element._updateRequestsProjects([{
+        legacyProject: 'legacy'
+      }], ['test']);
+      assert.typeOf(result[0].projects, 'array');
+      assert.deepEqual(result[0].projects, ['legacy', 'test']);
+    });
+
+    test('Removes "legacyProject" from the request', () => {
+      const result = element._updateRequestsProjects([{
+        legacyProject: 'legacy'
+      }], ['test']);
+      assert.isUndefined(result[0].legacyProject);
+    });
+
+    test('Ignores "legacyProject" if already on "projects" list', () => {
+      const result = element._updateRequestsProjects([{
+        legacyProject: 'legacy',
+        projects: ['legacy']
+      }], ['test']);
+      assert.deepEqual(result[0].projects, ['legacy', 'test']);
     });
   });
   </script>

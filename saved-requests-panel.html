@@ -569,12 +569,7 @@ the License.
         return;
       }
       menu.opened = false;
-      const options = this.shadowRoot.querySelector('#savedListMenuOptions');
-      if (!options) {
-        console.warn('Options menu not found in the DOM');
-        return;
-      }
-      options.selected = -1;
+      this.shadowRoot.querySelector('#savedListMenuOptions').selected = -1;
     }
     /**
      * Calles `_exportItems()` with default destination (`file`)
@@ -617,6 +612,25 @@ the License.
      * in `arc-data-export`.
      */
     _exportAll(destination) {
+      const e = this._dispatchExportData(destination, true);
+      if (!e.defaultPrevented) {
+        this.$.noExport.opened = true;
+        return;
+      }
+      e.detail.result
+      .then(() => {
+        if (destination === 'drive') {
+          this.$.driveSaved.opened = true;
+        }
+      });
+    }
+    /**
+     * Dispatches `export-data` event and returns it.
+     * @param {String} destination A place where export the data (file, drive)
+     * @param {Array<Object>|Boolean} requests
+     * @return {CustomEvent}
+     */
+    _dispatchExportData(destination, requests) {
       const e = new CustomEvent('export-data', {
         cancelable: true,
         composed: true,
@@ -625,21 +639,14 @@ the License.
           type: 'arc-export',
           destination,
           file: 'arc-saved-export.json',
+          kind: 'ARC#SavedExport',
           data: {
-            saved: true
+            requests
           }
         }
       });
       this.dispatchEvent(e);
-      if (!e.defaultPrevented) {
-        this.$.noExport.opened = true;
-        return;
-      }
-      e.detail.result.then(() => {
-        if (destination === 'drive') {
-          this.$.driveSaved.opened = true;
-        }
-      });
+      return e;
     }
     /**
      * Dispatches the `export-project` event with relevant data.
@@ -652,26 +659,13 @@ the License.
       if (!data.length) {
         return;
       }
-      const e = new CustomEvent('export-data', {
-        cancelable: true,
-        composed: true,
-        bubbles: true,
-        detail: {
-          type: 'arc-export',
-          destination,
-          file: 'arc-saved-export.json',
-          kind: 'ARC#SavedExport',
-          data: {
-            saved: data
-          }
-        }
-      });
-      this.dispatchEvent(e);
+      const e = this._dispatchExportData(destination, data);
       if (!e.defaultPrevented) {
         this.$.noExport.opened = true;
         return;
       }
-      e.detail.result.then(() => {
+      e.detail.result
+      .then(() => {
         if (destination === 'drive') {
           this.$.driveSaved.opened = true;
         }
@@ -681,8 +675,7 @@ the License.
      * Handler for delete all menu option click.
      */
     _deleteAllClick() {
-      this.$.mainMenu.opened = false;
-      this.$.mainMenuOptions.selected = -1;
+      this._closeMainMenu();
       this.$.dataClearDialog.opened = true;
     }
     /**
@@ -699,15 +692,7 @@ the License.
      * Removes all data from the datastore and then fires
      */
     _clearDatastore() {
-      const e = new CustomEvent('destroy-model', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          models: ['saved']
-        }
-      });
-      this.dispatchEvent(e);
+      const e = this._dispatchDeleteModel();
       if (!e.detail.result) {
         this.$.dataClearErrorToast.opened = true;
         this._handleError(new Error('Model not found.'));
@@ -718,6 +703,22 @@ the License.
         this.$.dataClearErrorToast.opened = true;
         this._handleError(cause);
       });
+    }
+    /**
+     * Dispatches `destroy-model` with `saved` on the models list.
+     * @return {CustomEvent}
+     */
+    _dispatchDeleteModel() {
+      const e = new CustomEvent('destroy-model', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          models: ['saved']
+        }
+      });
+      this.dispatchEvent(e);
+      return e;
     }
     /**
      * Opens request details editor in place of the request details applet.
@@ -742,7 +743,7 @@ the License.
       this.editorOpened = false;
     }
     /**
-     * Handler fro save request event from the editor.
+     * Handler to save the request event from the editor.
      */
     _saveRequestEdit() {
       this.editorOpened = false;
