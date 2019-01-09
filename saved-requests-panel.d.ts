@@ -217,6 +217,13 @@ declare namespace UiElements {
     _exportAll(destination: String|null): void;
 
     /**
+     * Dispatches `export-data` event and returns it.
+     *
+     * @param destination A place where export the data (file, drive)
+     */
+    _dispatchExportData(destination: String|null, requests: Array<object|null>|Boolean|null): CustomEvent|null;
+
+    /**
      * Dispatches the `export-project` event with relevant data.
      */
     _exportItems(destination: String|null): void;
@@ -237,6 +244,11 @@ declare namespace UiElements {
     _clearDatastore(): void;
 
     /**
+     * Dispatches `destroy-model` with `saved` on the models list.
+     */
+    _dispatchDeleteModel(): CustomEvent|null;
+
+    /**
      * Opens request details editor in place of the request details applet.
      */
     _editRequestDetails(): void;
@@ -244,7 +256,7 @@ declare namespace UiElements {
     _cancelRequestEdit(): void;
 
     /**
-     * Handler fro save request event from the editor.
+     * Handler to save the request event from the editor.
      */
     _saveRequestEdit(): void;
     _computeHasSelection(length: any): any;
