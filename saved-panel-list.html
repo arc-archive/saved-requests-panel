@@ -191,9 +191,14 @@ the License.
         case 'compact': size = 36; break;
         default: size = 72; break;
       }
-      this.updateStyles({
-        '--paper-item-icon-width': `${size}px`
-      });
+      const value = `${size}px`;
+      if (!window.ShadyCSS) {
+        this.style.setProperty('--paper-item-icon-width', value);
+      } else {
+        this.updateStyles({
+          '--paper-item-icon-width': value
+        });
+      }
       if (this.notifyResize) {
         this.notifyResize();
       }

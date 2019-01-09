@@ -32,16 +32,16 @@
     "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
     "bottom-sheet": "advanced-rest-client/bottom-sheet#^2.0.0",
     "paper-fab": "PolymerElements/paper-fab#^2.0.0",
-    "saved-request-editor": "advanced-rest-client/saved-request-editor#2.0.0-preview",
-    "saved-request-detail": "advanced-rest-client/saved-request-detail#2.0.0-preview",
+    "saved-request-editor": "advanced-rest-client/saved-request-editor#^2.0.0",
+    "saved-request-detail": "advanced-rest-client/saved-request-detail#^2.0.0",
     "http-method-label": "advanced-rest-client/http-method-label#^2.0.0",
-    "requests-list-mixin": "advanced-rest-client/requests-list-mixin#2.0.0-preview",
+    "requests-list-mixin": "advanced-rest-client/requests-list-mixin#^2.0.0",
     "iron-list": "PolymerElements/iron-list#^2.0.0",
     "paper-ripple": "PolymerElements/paper-ripple#^2.0.0",
     "iron-scroll-threshold": "PolymerElements/iron-scroll-threshold#^2.0.0",
-    "projects-list-consumer-mixin": "advanced-rest-client/projects-list-consumer-mixin#2.0.0-preview",
+    "projects-list-consumer-mixin": "advanced-rest-client/projects-list-consumer-mixin#^2.0.0",
     "paper-chip-input": "advanced-rest-client/paper-chip-input#^2.0.0",
-    "saved-list-mixin": "advanced-rest-client/saved-list-mixin#2.0.0-preview"
+    "saved-list-mixin": "advanced-rest-client/saved-list-mixin#^2.0.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",

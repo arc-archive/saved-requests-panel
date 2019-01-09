@@ -1308,6 +1308,76 @@
       assert.deepEqual(result[0].projects, ['legacy', 'test']);
     });
   });
+
+  suite('_createProjects()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    function factory(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve('test');
+    }
+
+    test('Disaptches project-update-bulk event', () => {
+      const spy = sinon.spy();
+      element.addEventListener('project-update-bulk', spy);
+      element.addEventListener('project-update-bulk', factory);
+      element._createProjects(['name-x'], ['request-x']);
+      element.removeEventListener('project-update-bulk', factory);
+      assert.isTrue(spy.called, 'Event is dispatched');
+      assert.isTrue(spy.args[0][0].cancelable, 'Event is cancelable');
+      assert.isTrue(spy.args[0][0].bubbles, 'Event bubbles');
+    });
+
+    test('Event has 2 projects', () => {
+      const spy = sinon.spy();
+      element.addEventListener('project-update-bulk', spy);
+      element.addEventListener('project-update-bulk', factory);
+      element._createProjects(['name-x', 'name-y'], ['request-x']);
+      assert.lengthOf(spy.args[0][0].detail.projects, 2);
+    });
+
+    test('Each project has request IDs', () => {
+      const spy = sinon.spy();
+      element.addEventListener('project-update-bulk', spy);
+      element.addEventListener('project-update-bulk', factory);
+      element._createProjects(['name-x', 'name-y'], ['request-x']);
+      element.removeEventListener('project-update-bulk', factory);
+      const projects = spy.args[0][0].detail.projects;
+      assert.deepEqual(projects[0].requests, ['request-x']);
+      assert.deepEqual(projects[1].requests, ['request-x']);
+    });
+
+    test('Each project has name', () => {
+      const spy = sinon.spy();
+      element.addEventListener('project-update-bulk', spy);
+      element.addEventListener('project-update-bulk', factory);
+      element._createProjects(['name-x', 'name-y'], ['request-x']);
+      element.removeEventListener('project-update-bulk', factory);
+      const projects = spy.args[0][0].detail.projects;
+      assert.equal(projects[0].name, 'name-x');
+      assert.equal(projects[1].name, 'name-y');
+    });
+
+    test('Returns a promise', () => {
+      element.addEventListener('project-update-bulk', factory);
+      const result = element._createProjects(['name-x', 'name-y'], ['request-x']);
+      element.removeEventListener('project-update-bulk', factory);
+      assert.typeOf(result.then, 'function');
+    });
+
+    test('Rejects when no model', () => {
+      return element._createProjects(['name-x', 'name-y'], ['request-x'])
+      .then(() => {
+        throw new Error('Should not resolve');
+      })
+      .catch((cause) => {
+        assert.equal(cause.message, 'The project-model is not in the DOM.');
+      });
+    });
+  });
   </script>
 </body>
 
