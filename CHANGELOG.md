@@ -1,3 +1,13 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.9...2.0.0) (2019-01-09)
+
+
+### Update
+
+* Adding saved-list-mixin ([5396c687df2490d2cb3111eccb6b7b7af75f8e9f](https://github.com/advanced-rest-client/saved-requests-panel/commit/5396c687df2490d2cb3111eccb6b7b7af75f8e9f))
+
+
+
 <a name="0.2.10"></a>
 ## [0.2.10](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.9...0.2.10) (2017-12-15)
 
