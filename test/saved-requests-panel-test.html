@@ -201,7 +201,9 @@
         data = e;
       });
       element._loadRequestDetails();
-      assert.isTrue(data.composed);
+      if (typeof data.composed !== 'undefined') {
+        assert.isTrue(data.composed);
+      }
     });
 
     test('The event is cancelable', () => {
@@ -334,7 +336,9 @@
         data = e;
       });
       element._dispatchDelete(list);
-      assert.isTrue(data.composed);
+      if (typeof data.composed !== 'undefined') {
+        assert.isTrue(data.composed);
+      }
     });
 
     test('The event is cancelable', () => {
@@ -485,7 +489,9 @@
         data = e;
       });
       element._dispatchUndelete(list);
-      assert.isTrue(data.composed);
+      if (typeof data.composed !== 'undefined') {
+        assert.isTrue(data.composed);
+      }
     });
 
     test('The event is cancelable', () => {
@@ -851,7 +857,9 @@
 
     test('Event is composed', () => {
       const result = element._dispatchExportData();
-      assert.isTrue(result.composed);
+      if (typeof result.composed !== 'undefined') {
+        assert.isTrue(result.composed);
+      }
     });
 
     test('Event bubbles', () => {
@@ -1025,7 +1033,9 @@
 
     test('Event is composed', () => {
       const result = element._dispatchDeleteModel();
-      assert.isTrue(result.composed);
+      if (typeof result.composed !== 'undefined') {
+        assert.isTrue(result.composed);
+      }
     });
 
     test('Event bubbles', () => {
