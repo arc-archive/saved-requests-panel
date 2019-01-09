@@ -1,0 +1,273 @@
+<!--
+@license
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/utils/render-status.html">
+<link rel="import" href="../paper-item/paper-icon-item.html">
+<link rel="import" href="../paper-item/paper-item-body.html">
+<link rel="import" href="../paper-ripple/paper-ripple.html">
+<link rel="import" href="../requests-list-mixin/requests-list-styles.html">
+<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../http-method-label/http-method-label.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
+<dom-module id="saved-panel-list">
+  <template>
+    <style include="requests-list-styles">
+    :host {
+      display: block;
+      position: relative;
+      @apply --arc-font-body1;
+      @apply --layout-flex;
+      @apply --layout-vertical;
+      @apply --saved-panel-list;
+    };
+
+    iron-list {
+      flex: 1 1 auto;
+      @apply --saved-panel-list-list;
+    }
+
+    .url {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      font-size: 14px;
+      @apply --saved-panel-list-url-label;
+    }
+
+    http-method-label {
+      margin-right: 12px;
+      margin-bottom: 0;
+      @apply --saved-panel-list-method-label;
+    }
+
+    .secondary-action {
+      color: var(--saved-panel-list-secondary-action-color, var(--primary-color));
+      height: 36px;
+      font-size: 14px;
+    }
+
+    :host([list-type="comfortable"]) .list-action-button {
+      height: 32px;
+    }
+
+    :host([list-type="compact"]) .list-action-button {
+      height: 24px;
+    }
+    </style>
+    <iron-list items="[[requests]]" id="list" selected-items="{{selectedItems}}" multi-selection>
+      <template>
+        <div data-index$="[[index]]" class$="saved-item [[_computeRowClass(selected)]]">
+          <paper-icon-item on-click="_toggleSelection" tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.url]]">
+            <paper-checkbox slot="item-icon" checked="{{selected}}"></paper-checkbox>
+            <http-method-label method="[[item.method]]"></http-method-label>
+            <paper-item-body two-line$="[[hasTwoLines]]">
+              <div class="url">[[item.url]]</div>
+              <div secondary class="item-details">
+                <span class="name">[[item.name]]</span>
+              </div>
+              <paper-ripple></paper-ripple>
+            </paper-item-body>
+            <paper-button class="list-action-button secondary-action" data-action="item-detail" on-click="_requestDetails">Details</paper-button>
+            <paper-button class="list-action-button main-action" data-action="open-item" on-click="_navigateItem" raised>Open</paper-button>
+          </paper-icon-item>
+        </div>
+      </template>
+    </iron-list>
+    <iron-scroll-threshold
+      id="scrollTheshold"
+      lower-threshold="[[threshold]]"
+      on-lower-threshold="_thresholdHandler"
+      scroll-target="[[_scrollTarget]]"></iron-scroll-threshold>
+  </template>
+  <script>
+  /**
+   * `saved-panel-list`
+   *
+   * ## Styling
+   *
+   * `<saved-panel-list>` provides the following custom properties and mixins for styling:
+   *
+   * Custom property | Description | Default
+   * ----------------|-------------|----------
+   * `--saved-panel-list` | Mixin applied to this elment | `{}`
+   * `--saved-panel-list-url-label` | Mixin applied to the list container | `{}`
+   * `--saved-panel-list-secondary-action-color` | Color of the secondary action button | `--primary-color`
+   * `--saved-panel-list-url-label` | Mixin applied to the URL label | `{}`
+   * `--saved-panel-list-method-label` | Mixin applied to the method label | `{}`
+   *
+   * @customElement
+   * @polymer
+   * @demo demo/index.html
+   * @memberof ApiElements
+   */
+  class SavedPanelList extends Polymer.Element {
+    static get is() {
+      return 'saved-panel-list';
+    }
+    static get properties() {
+      return {
+        requests: Array,
+        /**
+         * Changes information density of list items.
+         * By default it uses material's peper item with two lines (72px heigth)
+         * Possible values are:
+         *
+         * - `default` or empty - regular list view
+         * - `comfortable` - enables MD single line list item vie (52px heigth)
+         * - `compact` - enables list that has 40px heigth (touch recommended)
+         */
+        listType: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_updateListStyles'
+        },
+        /**
+         * A list lower treshold when the `history-list-threshold` will be
+         * fired. It should informa the app that the user nearly reached
+         * the end of the list and new items should be loaded.
+         */
+        threshold: {
+          type: Number,
+          value: 120
+        },
+        /**
+         * Scroll target for `iron-scroll-threshold`.
+         * This is set in connectedCallback as the DOM has to be initialized
+         * before setting this property.
+         * @type {Element}
+         */
+        _scrollTarget: Object,
+        // List of selected items on the list.
+        selectedItems: {
+          type: Array,
+          notify: true
+        },
+
+        hasTwoLines: Boolean
+      };
+    }
+
+    static get observers() {
+      return ['_requestsChanged(requests.*)'];
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this._scrollTarget = this.$.list;
+    }
+
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._scrollTarget = undefined;
+    }
+
+    /**
+     * Notifies the list that the resize event occurred.
+     * Should be called whhen content of the list changed but the list wasn't
+     * visible at the time.
+     */
+    notifyResize() {
+      this.$.list.notifyResize();
+    }
+
+    _updateListStyles(type) {
+      let size;
+      switch (type) {
+        case 'comfortable': size = 48; break;
+        case 'compact': size = 36; break;
+        default: size = 72; break;
+      }
+      const value = `${size}px`;
+      if (!window.ShadyCSS) {
+        this.style.setProperty('--paper-item-icon-width', value);
+      } else {
+        this.updateStyles({
+          '--paper-item-icon-width': value
+        });
+      }
+      if (this.notifyResize) {
+        this.notifyResize();
+      }
+    }
+
+    _thresholdHandler(e) {
+      if (this.__ignoreTreshold) {
+        e.target.clearTriggers();
+        return;
+      }
+      const r = this.requests;
+      if (!r || !r.length) {
+        return;
+      }
+      this.dispatchEvent(new CustomEvent('list-items-threshold'));
+    }
+
+    _requestsChanged(record) {
+      if (!this.__ignoreTreshold && record &&
+        (record.path === 'requests.length' || record.path === 'requests')) {
+        this.$.scrollTheshold.clearTriggers();
+        this.__ignoreTreshold = true;
+        Polymer.RenderStatus.afterNextRender(this, () => {
+          this.__ignoreTreshold = false;
+        });
+      }
+    }
+
+    _requestDetails(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      this.dispatchEvent(new CustomEvent('list-item-details', {
+        detail: {
+          request: e.model.get('item')
+        }
+      }));
+    }
+
+    _navigateItem(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const id = e.model.get('item._id');
+      this.dispatchEvent(new CustomEvent('navigate', {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+        detail: {
+          base: 'request',
+          type: 'saved',
+          id
+        }
+      }));
+    }
+
+    _toggleSelection(e) {
+      this.$.list.toggleSelectionForIndex(e.model.get('index'));
+    }
+
+    /**
+     * Computes list item row class
+     * @param {Boolean} selected True if the item was selected
+     * @return {String} Item class name dependeing on selection state
+     */
+    _computeRowClass(selected) {
+      return selected ? 'selected' : '';
+    }
+  }
+  window.customElements.define(SavedPanelList.is, SavedPanelList);
+  </script>
+</dom-module>

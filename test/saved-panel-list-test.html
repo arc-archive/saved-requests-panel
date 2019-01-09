@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>saved-requests-panel test</title>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
+  <link rel="import" href="../../neon-animation/web-animations.html">
+  <link rel="import" href="../../iron-test-helpers/mock-interactions.html">
+  <link rel="import" href="../saved-panel-list.html">
+</head>
+
+<body>
+  <test-fixture id="Basic">
+    <template>
+      <saved-panel-list></saved-panel-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Comfortable">
+    <template>
+      <saved-panel-list list-type="comfortable"></saved-panel-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Compact">
+    <template>
+      <saved-panel-list list-type="compact"></saved-panel-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="Default">
+    <template>
+      <saved-panel-list list-type="default"></saved-panel-list>
+    </template>
+  </test-fixture>
+
+  <script>
+  /* global DataGenerator, MockInteractions */
+  suite('List types computations', () => {
+    const iconWidthProperty = '--paper-item-icon-width';
+    const iconWidths = ['72px', '48px', '36px'];
+
+    suite('Default list type', () => {
+      test(`Icon width is ${iconWidths[0]} for default list style`, (done) => {
+        let style;
+        const element = fixture('Default');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style.trim(), iconWidths[0]);
+          done();
+        });
+      });
+
+      test(`Icon width is ${iconWidths[0]} for inital list style`, (done) => {
+        const element = fixture('Basic');
+        flush(() => {
+          let style;
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style.trim(), iconWidths[0]);
+          done();
+        });
+      });
+
+      test('Calls notifyResize() when defined', (done) => {
+        let called = false;
+        const element = fixture('Basic');
+        element.notifyResize = () => called = true;
+        element.listType = 'comfortable';
+        flush(() => {
+          assert.isTrue(called);
+          done();
+        });
+      });
+    });
+
+    suite('Comfortable list type', () => {
+      test('Icon width is ' + iconWidths[1], (done) => {
+        let style;
+        const element = fixture('Comfortable');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style, iconWidths[1]);
+          done();
+        });
+      });
+    });
+
+    suite('Compact list type', () => {
+      test('Icon width is ' + iconWidths[2], (done) => {
+        let style;
+        const element = fixture('Compact');
+        flush(() => {
+          if (window.ShadyCSS) {
+            style = window.ShadyCSS.getComputedStyleValue(element, iconWidthProperty);
+          } else {
+            style = getComputedStyle(element).getPropertyValue(iconWidthProperty);
+          }
+          assert.equal(style, iconWidths[2]);
+          done();
+        });
+      });
+    });
+  });
+
+  suite('_thresholdHandler()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Dispatches "list-items-threshold" event', () => {
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 5
+      });
+      const spy = sinon.spy();
+      element.addEventListener('list-items-threshold', spy);
+      element.__ignoreTreshold = false;
+      element._thresholdHandler();
+      assert.isTrue(spy.called);
+    });
+
+    test('Does nothing when no requests', () => {
+      const spy = sinon.spy();
+      element.addEventListener('list-items-threshold', spy);
+      element.__ignoreTreshold = false;
+      element._thresholdHandler();
+      assert.isFalse(spy.called);
+    });
+
+    test('Calls clearTriggers on treshold', (done) => {
+      flush(() => {
+        const node = element.$.scrollTheshold;
+        const spy = sinon.spy(node, 'clearTriggers');
+        element.__ignoreTreshold = true;
+        element._thresholdHandler({
+          target: node
+        });
+        assert.isTrue(spy.called);
+        done();
+      });
+    });
+  });
+
+  suite('_navigateItem()', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 5
+      });
+      flush(() => done());
+    });
+
+    test('Dispatches "navigate" event when opend button click', () => {
+      const node = element.shadowRoot.querySelector('[data-action="open-item"]');
+      const spy = sinon.spy();
+      element.addEventListener('navigate', spy);
+      MockInteractions.tap(node);
+      assert.isTrue(spy.called);
+    });
+
+    test('Base is set', () => {
+      const node = element.shadowRoot.querySelector('[data-action="open-item"]');
+      const spy = sinon.spy();
+      element.addEventListener('navigate', spy);
+      MockInteractions.tap(node);
+      assert.equal(spy.args[0][0].detail.base, 'request');
+    });
+
+    test('Type is set', () => {
+      const node = element.shadowRoot.querySelector('[data-action="open-item"]');
+      const spy = sinon.spy();
+      element.addEventListener('navigate', spy);
+      MockInteractions.tap(node);
+      assert.equal(spy.args[0][0].detail.type, 'saved');
+    });
+
+    test('Id is set', () => {
+      const node = element.shadowRoot.querySelector('[data-action="open-item"]');
+      const spy = sinon.spy();
+      element.addEventListener('navigate', spy);
+      MockInteractions.tap(node);
+      assert.typeOf(spy.args[0][0].detail.id, 'string');
+    });
+  });
+
+  suite('_requestDetails()', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      element.requests = DataGenerator.generateRequests({
+        requestsSize: 5
+      });
+      flush(() => done());
+    });
+
+    test('Dispatches "list-item-details"', () => {
+      const node = element.shadowRoot.querySelector('[data-action="item-detail"]');
+      const spy = sinon.spy();
+      element.addEventListener('list-item-details', spy);
+      MockInteractions.tap(node);
+      assert.isTrue(spy.called);
+    });
+
+    test('Request is set', () => {
+      const node = element.shadowRoot.querySelector('[data-action="item-detail"]');
+      const spy = sinon.spy();
+      element.addEventListener('list-item-details', spy);
+      MockInteractions.tap(node);
+      assert.typeOf(spy.args[0][0].detail.request, 'object');
+    });
+  });
+  </script>
+</body>
+
+</html>
