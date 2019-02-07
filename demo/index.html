@@ -152,6 +152,7 @@
       let item = panel.requests[0];
       item = Object.assign({}, item);
       item.updated = Date.now();
+      item.name = 'New name ' + Date.now();
       const e = new CustomEvent('request-object-changed', {
         detail: {
           request: item,
@@ -177,7 +178,7 @@
     };
 
     scope.addNew = () => {
-      const item = DataGenerator.generateRequests();
+      const item = DataGenerator.generateSavedItem();
       item.update = Date.now();
       const e = new CustomEvent('request-object-changed', {
         detail: {

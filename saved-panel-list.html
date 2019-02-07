@@ -29,6 +29,7 @@ the License.
     :host {
       display: block;
       position: relative;
+      --paper-item-icon-width: 56px;
       @apply --arc-font-body1;
       @apply --layout-flex;
       @apply --layout-vertical;
@@ -47,42 +48,22 @@ the License.
       font-size: 14px;
       @apply --saved-panel-list-url-label;
     }
-
-    http-method-label {
-      margin-right: 12px;
-      margin-bottom: 0;
-      @apply --saved-panel-list-method-label;
-    }
-
-    .secondary-action {
-      color: var(--saved-panel-list-secondary-action-color, var(--primary-color));
-      height: 36px;
-      font-size: 14px;
-    }
-
-    :host([list-type="comfortable"]) .list-action-button {
-      height: 32px;
-    }
-
-    :host([list-type="compact"]) .list-action-button {
-      height: 24px;
-    }
     </style>
     <iron-list items="[[requests]]" id="list" selected-items="{{selectedItems}}" multi-selection>
       <template>
         <div data-index$="[[index]]" class$="saved-item [[_computeRowClass(selected)]]">
-          <paper-icon-item on-click="_toggleSelection" tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.url]]">
+          <paper-icon-item on-click="_toggleSelection" tabindex$="[[tabIndex]]" aria-label$="Select/Deselect [[item.url]]" class="request-list-item">
             <paper-checkbox slot="item-icon" checked="{{selected}}"></paper-checkbox>
             <http-method-label method="[[item.method]]"></http-method-label>
             <paper-item-body two-line$="[[hasTwoLines]]">
-              <div class="url">[[item.url]]</div>
+              <div class="url select-text">[[item.url]]</div>
               <div secondary class="item-details">
-                <span class="name">[[item.name]]</span>
+                <span class="name select-text">[[item.name]]</span>
               </div>
               <paper-ripple></paper-ripple>
             </paper-item-body>
-            <paper-button class="list-action-button secondary-action" data-action="item-detail" on-click="_requestDetails">Details</paper-button>
-            <paper-button class="list-action-button main-action" data-action="open-item" on-click="_navigateItem" raised>Open</paper-button>
+            <paper-button class="list-action-button list-secondary-action" data-action="item-detail" on-click="_requestDetails">Details</paper-button>
+            <paper-button class="list-action-button list-main-action" data-action="open-item" on-click="_navigateItem" raised>Open</paper-button>
           </paper-icon-item>
         </div>
       </template>
@@ -122,20 +103,6 @@ the License.
       return {
         requests: Array,
         /**
-         * Changes information density of list items.
-         * By default it uses material's peper item with two lines (72px heigth)
-         * Possible values are:
-         *
-         * - `default` or empty - regular list view
-         * - `comfortable` - enables MD single line list item vie (52px heigth)
-         * - `compact` - enables list that has 40px heigth (touch recommended)
-         */
-        listType: {
-          type: String,
-          reflectToAttribute: true,
-          observer: '_updateListStyles'
-        },
-        /**
          * A list lower treshold when the `history-list-threshold` will be
          * fired. It should informa the app that the user nearly reached
          * the end of the list and new items should be loaded.
@@ -156,7 +123,10 @@ the License.
           type: Array,
           notify: true
         },
-
+        /**
+         * When set the list items are rendered having 2 lines.
+         * @type {Boolean}
+         */
         hasTwoLines: Boolean
       };
     }
@@ -182,26 +152,6 @@ the License.
      */
     notifyResize() {
       this.$.list.notifyResize();
-    }
-
-    _updateListStyles(type) {
-      let size;
-      switch (type) {
-        case 'comfortable': size = 48; break;
-        case 'compact': size = 36; break;
-        default: size = 72; break;
-      }
-      const value = `${size}px`;
-      if (!window.ShadyCSS) {
-        this.style.setProperty('--paper-item-icon-width', value);
-      } else {
-        this.updateStyles({
-          '--paper-item-icon-width': value
-        });
-      }
-      if (this.notifyResize) {
-        this.notifyResize();
-      }
     }
 
     _thresholdHandler(e) {
@@ -265,7 +215,7 @@ the License.
      * @return {String} Item class name dependeing on selection state
      */
     _computeRowClass(selected) {
-      return selected ? 'selected' : '';
+      return selected ? 'iron-selected' : '';
     }
   }
   window.customElements.define(SavedPanelList.is, SavedPanelList);
