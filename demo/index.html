@@ -21,6 +21,7 @@
   <link rel="import" href="../../arc-data-generator/arc-data-generator.html">
   <link rel="import" href="../../neon-animation/web-animations.html">
   <link rel="import" href="../../paper-dropdown-menu/paper-dropdown-menu.html">
+  <link rel="import" href="../../bottom-sheet/bottom-sheet.html">
   <link rel="import" href="../saved-requests-panel.html">
   <link rel="import" href="../../arc-electron-default-theme/arc-electron-default-theme.html">
 
@@ -45,6 +46,11 @@
 
     saved-requests-panel {
       height: calc(100vh - 320px);
+    }
+
+    pre {
+      display: block;
+      white-space: pre-wrap;
     }
     </style>
   </custom-style>
@@ -73,15 +79,21 @@
         </paper-dropdown-menu>
       </section>
 
+      <bottom-sheet opened="{{exportSheetOpened}}">
+        <h3>Export demo</h3>
+        <p>This is a preview of the file. Normally export module would save this data to file / Drive.</p>
+        <p>File: [[exportFile]]</p>
+        <pre>[[exportData]]</pre>
+      </bottom-sheet>
+
       <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
       <paper-toast id="delToast" text="The request data has been removed"></paper-toast>
       <paper-toast id="navToast" text="Navigation ocurred"></paper-toast>
-      <paper-toast id="exportToast" text="Export requested."></paper-toast>
     </template>
   </dom-bind>
 
 
-  <arc-data-export></arc-data-export>
+  <arc-data-export app-version="demo-page"></arc-data-export>
   <project-model></project-model>
   <request-model></request-model>
   <url-indexer></url-indexer>
@@ -95,22 +107,6 @@
       msg += `, and id: ${id}`;
     }
     toast.text = msg;
-    toast.opened = true;
-  });
-
-  window.addEventListener('export-data', function(e) {
-    e.preventDefault();
-    e.detail.result = Promise.resolve({});
-    const toast = document.getElementById('exportToast');
-    toast.opened = true;
-  });
-
-  window.addEventListener('export-google-drive', function(e) {
-    e.preventDefault();
-    e.detail.result = Promise.resolve({
-      id: 'testId'
-    });
-    const toast = document.getElementById('exportToast');
     toast.opened = true;
   });
 
@@ -152,6 +148,7 @@
       let item = panel.requests[0];
       item = Object.assign({}, item);
       item.updated = Date.now();
+      item.name = 'New name ' + Date.now();
       const e = new CustomEvent('request-object-changed', {
         detail: {
           request: item,
@@ -177,7 +174,7 @@
     };
 
     scope.addNew = () => {
-      const item = DataGenerator.generateRequests();
+      const item = DataGenerator.generateSavedItem();
       item.update = Date.now();
       const e = new CustomEvent('request-object-changed', {
         detail: {
@@ -189,13 +186,17 @@
       document.body.dispatchEvent(e);
     };
 
-    // Mocking of the data export component.
-    document.body.addEventListener('export-data', function(e) {
-      e.preventDefault();
-      e.detail.result = new Promise((resolve) => {
-        resolve();
+    scope._fileExportHandler = function(e) {
+      const {content, file} = e.detail;
+      Polymer.RenderStatus.afterNextRender(scope, () => {
+        scope.exportData = JSON.stringify(content, null, 2);
+        scope.exportFile = file;
+        scope.exportSheetOpened = true;
       });
-    });
+      e.preventDefault();
+    };
+    window.addEventListener('file-data-save', scope._fileExportHandler);
+    window.addEventListener('google-drive-data-save', scope._fileExportHandler);
   })(document.getElementById('demo'));
   //
   //

@@ -32,6 +32,7 @@ the License.
 <link rel="import" href="../projects-list-consumer-mixin/projects-list-consumer-mixin.html">
 <link rel="import" href="../paper-chip-input/paper-chip-input.html">
 <link rel="import" href="../saved-list-mixin/saved-list-mixin.html">
+<link rel="import" href="../export-options/export-options.html">
 <link rel="import" href="saved-panel-list.html">
 
 <dom-module id="saved-requests-panel">
@@ -63,22 +64,22 @@ the License.
       @apply --arc-font-subhead;
     }
 
-    paper-listbox iron-icon {
+    .menu-item iron-icon {
       color: var(--context-menu-item-color);
     }
 
-    paper-listbox paper-icon-item {
+    .menu-item {
       color: var(--context-menu-item-color);
       background-color: var(--context-menu-item-background-color);
       cursor: pointer;
     }
 
-    paper-listbox paper-icon-item:hover {
+    .menu-item:hover {
       color: var(--context-menu-item-color-hover);
       background-color: var(--context-menu-item-background-color-hover);
     }
 
-    paper-listbox paper-icon-item:hover iron-icon {
+    .menu-item:hover iron-icon {
       color: var(--context-menu-item-color-hover);
     }
 
@@ -123,7 +124,8 @@ the License.
 
     #requestDetailsContainer,
     #requestEditorContainer,
-    #projectSelectorContainer {
+    #projectSelectorContainer,
+    #exportOptionsContainer {
       width: var(--bottom-sheet-width, 100%);
       max-width: var(--bottom-sheet-max-width, 700px);
       right: var(--saved-requests-panel-bottom-sheet-right, 40px);
@@ -167,18 +169,8 @@ the License.
         <paper-menu-button dynamic-align id="mainMenu">
           <paper-icon-button icon="arc:more-vert" slot="dropdown-trigger"></paper-icon-button>
           <paper-listbox slot="dropdown-content" id="mainMenuOptions">
-            <paper-icon-item on-click="_onExportAll">
-              <iron-icon icon="arc:archive" slot="item-icon"></iron-icon>
-              Export all to file
-            </paper-icon-item>
-            <paper-icon-item on-click="_onExportAllDrive" data-action="export-selected-drive">
-              <iron-icon icon="arc:drive-color" slot="item-icon"></iron-icon>
-              Export all to Google Drive
-            </paper-icon-item>
-            <paper-icon-item on-click="_deleteAllClick">
-              <iron-icon icon="arc:delete" slot="item-icon"></iron-icon>
-              Delete all
-            </paper-icon-item>
+            <paper-icon-item class="menu-item" on-click="openExportAll"><iron-icon icon="arc:export-variant" slot="item-icon"></iron-icon>Export all</paper-icon-item>
+            <paper-icon-item class="menu-item" on-click="_deleteAllClick"><iron-icon icon="arc:delete" slot="item-icon"></iron-icon>Delete all</paper-icon-item>
           </paper-listbox>
         </paper-menu-button>
       </div>
@@ -191,26 +183,18 @@ the License.
       <p>Save a request using the <code class="command">[[_computeA11yCommand('s')]]</code> keys on the request editor screen.</p>
     </template>
 
-
     <section class="selection-options" hidden$="[[listHidden]]">
       <p class="selection-label">Selected: [[selectedItems.length]]</p>
       <template is="dom-if" if="[[hasSelection]]">
         <paper-menu-button dynamic-align id="savedListMenu">
           <paper-icon-button icon="arc:more-vert" slot="dropdown-trigger"></paper-icon-button>
           <paper-listbox slot="dropdown-content" id="savedListMenuOptions">
-            <paper-icon-item on-click="_exportSelected" data-action="export-selected-file">
-              <iron-icon icon="arc:archive" slot="item-icon"></iron-icon>
-              Save selected to file
-            </paper-icon-item>
-            <paper-icon-item on-click="_exportSelectedDrive" data-action="export-selected-drive">
-              <iron-icon icon="arc:drive-color" slot="item-icon"></iron-icon>
-              Save selected to Google Drive
-            </paper-icon-item>
-            <paper-icon-item data-action="delete-all" on-click="_deleteSelected">
+            <paper-icon-item class="menu-item" on-click="_onExportSelected"><iron-icon icon="arc:export-variant" slot="item-icon"></iron-icon>Export selected</paper-icon-item>
+            <paper-icon-item class="menu-item" data-action="delete-all" on-click="_deleteSelected">
               <iron-icon icon="arc:delete" slot="item-icon"></iron-icon>
               Delete selected
             </paper-icon-item>
-            <paper-icon-item data-action="project-selected" on-click="_projectSelected">
+            <paper-icon-item class="menu-item" data-action="project-selected" on-click="_projectSelected">
               <iron-icon icon="arc:collections-bookmark" slot="item-icon"></iron-icon>
               Add selected to a project
             </paper-icon-item>
@@ -224,7 +208,7 @@ the License.
     <saved-panel-list
       hidden$="[[listHidden]]"
       requests="[[requests]]"
-      list-type="[[listType]]"
+      list-type$="[[listType]]"
       has-two-lines="[[_hasTwoLines]]"
       selected-items="{{selectedItems}}"
       on-list-items-threshold="loadNext"
@@ -257,6 +241,10 @@ the License.
       </div>
     </bottom-sheet>
 
+    <bottom-sheet id="exportOptionsContainer" opened="{{_exportOptionsOpened}}" on-iron-overlay-opened="_resizeSheetContent">
+      <export-options file="{{_exportOptions.file}}" provider="{{_exportOptions.provider}}" provider-options="{{_exportOptions.providerOptions}}" on-accept="_acceptExportOptions" on-cancel="_cancelExportOptions"></export-options>
+    </bottom-sheet>
+
     <paper-toast id="noModel" class="error-toast" text="Model not found. Please, report an issue."></paper-toast>
     <paper-toast id="errorToast" class="error-toast" duration="5000"></paper-toast>
     <paper-toast id="revertError" class="error-toast" text="Unable to revert changes. Please, report an issue."></paper-toast>
@@ -272,6 +260,7 @@ the License.
       <p>This will remove all data from the data store. Without option to restore it.</p>
       <p>Maybe you should create a backup first?</p>
       <div class="buttons">
+        <paper-button on-click="_exportAllFile">Create backup file</paper-button>
         <paper-button dialog-dismiss autofocus>Cancel</paper-button>
         <paper-button dialog-confirm class="action-button">Destroy</paper-button>
       </div>
@@ -356,7 +345,23 @@ the License.
          * List of selected in the dialog project names.
          * @type {Array<String>}
          */
-        selectedProjects: Array
+        selectedProjects: Array,
+        /**
+         * Indicates that the export options panel is currently rendered.
+         */
+        _exportOptionsOpened: Boolean,
+        _exportOptions: {
+          type: Object,
+          value: function() {
+            return {
+              file: this._generateFileName(),
+              provider: 'file',
+              providerOptions: {
+                parents: ['My Drive']
+              }
+            };
+          }
+        }
       };
     }
     constructor() {
@@ -368,6 +373,7 @@ the License.
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener('navigate', this._navigateHandler);
+      this.type = 'saved';
       const input = this.shadowRoot.querySelector('paper-input[type="search"]');
       input.inputElement.addEventListener('search', this._searchHandler);
     }
@@ -385,11 +391,7 @@ the License.
      */
     notifyResize() {
       const list = this.shadowRoot.querySelector('saved-panel-list');
-      if (list) {
-        list.notifyResize();
-      } else {
-        console.warn('saved-panel-list not in the DOM');
-      }
+      list.notifyResize();
     }
     /**
      * Computes value of the `listHidden` property.
@@ -424,16 +426,7 @@ the License.
      * Fires `navigate` event for currently loaded in the details request.
      */
     _loadRequestDetails() {
-      this.dispatchEvent(new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          base: 'request',
-          type: this.type,
-          id: this.$.requestDetails.request._id
-        }
-      }));
+      this._openRequest(this.$.requestDetails.request._id);
       this.detailsOpened = false;
     }
     /**
@@ -572,18 +565,6 @@ the License.
       this.shadowRoot.querySelector('#savedListMenuOptions').selected = -1;
     }
     /**
-     * Calles `_exportItems()` with default destination (`file`)
-     */
-    _exportSelected() {
-      this._exportItems('file');
-    }
-    /**
-     * Calles `_exportItems()` with destination set to `drive`
-     */
-    _exportSelectedDrive() {
-      this._exportItems('drive');
-    }
-    /**
      * Forces main menu to close.
      */
     _closeMainMenu() {
@@ -591,85 +572,70 @@ the License.
       this.$.mainMenuOptions.selected = -1;
     }
     /**
-     * Menu handler to export all project data to Drive
+     * Toggles export options panel and sets export items to all currently loaded requests.
      */
-    _onExportAllDrive() {
+    openExportAll() {
       this._closeMainMenu();
-      this._exportAll('drive');
+      this._exportOptionsOpened = !this._exportOptionsOpened;
+      this._exportItems = true;
     }
-    /**
-     * Menu handler to export all project data to file
-     */
-    _onExportAll() {
-      this._closeMainMenu();
-      this._exportAll('file');
+
+    _cancelExportOptions() {
+      this._exportOptionsOpened = false;
+      this._exportItems = undefined;
     }
+
     /**
-     * Requests application to export all data to `destination`.
-     * This works with `arc-data-export` element.
-     *
-     * @param {String} destination One of the supporting destinations
-     * in `arc-data-export`.
+     * Creates export file for all items.
+     * @return {Promise} Result of calling `_doExportItems()`
      */
-    _exportAll(destination) {
-      const e = this._dispatchExportData(destination, true);
-      if (!e.defaultPrevented) {
-        this.$.noExport.opened = true;
-        return;
-      }
-      e.detail.result
-      .then(() => {
-        if (destination === 'drive') {
-          this.$.driveSaved.opened = true;
-        }
-      });
-    }
-    /**
-     * Dispatches `export-data` event and returns it.
-     * @param {String} destination A place where export the data (file, drive)
-     * @param {Array<Object>|Boolean} requests
-     * @return {CustomEvent}
-     */
-    _dispatchExportData(destination, requests) {
-      const e = new CustomEvent('export-data', {
-        cancelable: true,
-        composed: true,
-        bubbles: true,
-        detail: {
-          type: 'arc-export',
-          destination,
-          file: 'arc-saved-export.json',
+    _exportAllFile() {
+      const detail = {
+        options: {
+          file: this._generateFileName(),
           kind: 'ARC#SavedExport',
-          data: {
-            requests
-          }
+          provider: 'file'
         }
-      });
-      this.dispatchEvent(e);
-      return e;
+      };
+      return this._doExportItems(true, detail);
     }
+
+    _acceptExportOptions(e) {
+      this._exportOptionsOpened = false;
+      const detail = e.detail;
+      return this._doExportItems(this._exportItems, detail);
+    }
+
     /**
-     * Dispatches the `export-project` event with relevant data.
+     * Calls `_dispatchExportData()` from requests lists mixin with
+     * prepared arguments
      *
-     * @param {String} destination
+     * @param {Array} requests List of request to export with the project.
+     * @param {String} detail Export configuration
+     * @return {Promise}
      */
-    _exportItems(destination) {
-      this._closeSelectionMenu();
-      const data = this.selectedItems;
-      if (!data.length) {
-        return;
-      }
-      const e = this._dispatchExportData(destination, data);
-      if (!e.defaultPrevented) {
-        this.$.noExport.opened = true;
-        return;
-      }
-      e.detail.result
+    _doExportItems(requests, detail) {
+      detail.options.kind = 'ARC#SavedExport';
+      const request = this._dispatchExportData(requests, detail);
+      return request.detail.result
       .then(() => {
-        if (destination === 'drive') {
+        if (detail.options.provider === 'drive') {
+          // TODO: Render link to the folder
           this.$.driveSaved.opened = true;
         }
+        this._exportItems = undefined;
+      })
+      .catch((cause) => {
+        this.$.errorToast.text = cause.message;
+        this.$.errorToast.opened = true;
+        console.warn(cause);
       });
+    }
+
+    _onExportSelected() {
+      this._closeSelectionMenu();
+      this._exportOptionsOpened = true;
+      this._exportItems = this.selectedItems || [];
     }
     /**
      * Handler for delete all menu option click.
@@ -813,11 +779,11 @@ the License.
      * @return {Promise}
      */
     _addSelectedProject() {
-      this.$.projectSelectorContainer.opened = false;
       const requests = this.selectedItems;
-      if (!requests) {
-        throw new Error('Something is wrong...');
+      if (!requests || !requests.length) {
+        throw new Error('Something is wrong. There\'s no selection. You shouldn\'t see this.');
       }
+      this.$.projectSelectorContainer.opened = false;
       const info = this._processSelectedProjectsInfo(this.selectedProjects);
       let p;
       if (info.add.length) {
@@ -886,6 +852,26 @@ the License.
       }
       const createdIds = created.map((item) => item._id);
       return ids.concat(createdIds);
+    }
+
+    /**
+     * Updates icon size CSS variable and notifies resize on the list when
+     * list type changes.
+     * @param {?String} type
+     */
+    _updateListStyles(type) {
+      let size;
+      switch (type) {
+        case 'comfortable': size = 40; break;
+        case 'compact': size = 36; break;
+        default: size = 56; break;
+      }
+      const list = this.shadowRoot.querySelector('saved-panel-list');
+      this._applyListStyles(size, list);
+    }
+
+    _generateFileName() {
+      return 'arc-saved-export.json';
     }
   }
   window.customElements.define(SavedRequestsPanel.is, SavedRequestsPanel);
