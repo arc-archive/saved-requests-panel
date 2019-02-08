@@ -154,3 +154,17 @@
 
 
 
+# [2.0.0](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.9...2.0.0) (2019-02-08)
+
+
+### Docs
+
+* Updating polymer docs ([63c41b11afb9b3a9ce28fbd707ed66537c72846b](https://github.com/advanced-rest-client/saved-requests-panel/commit/63c41b11afb9b3a9ce28fbd707ed66537c72846b))
+
+### Update
+
+* Adding saved-list-mixin ([5396c687df2490d2cb3111eccb6b7b7af75f8e9f](https://github.com/advanced-rest-client/saved-requests-panel/commit/5396c687df2490d2cb3111eccb6b7b7af75f8e9f))
+* Updating the component to new API ([20cea1de164ffb5e84cab99ae2d8a203b01befd6](https://github.com/advanced-rest-client/saved-requests-panel/commit/20cea1de164ffb5e84cab99ae2d8a203b01befd6))
+
+
+
