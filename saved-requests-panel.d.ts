@@ -8,6 +8,10 @@
  *   saved-requests-panel.html
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../polymer/types/polymer-element.d.ts" />
 /// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
 /// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
@@ -29,6 +33,7 @@
 /// <reference path="../projects-list-consumer-mixin/projects-list-consumer-mixin.d.ts" />
 /// <reference path="../paper-chip-input/paper-chip-input.d.ts" />
 /// <reference path="../saved-list-mixin/saved-list-mixin.d.ts" />
+/// <reference path="../export-options/export-options.d.ts" />
 /// <reference path="saved-panel-list.d.ts" />
 
 declare namespace UiElements {
@@ -101,8 +106,20 @@ declare namespace UiElements {
      * List of selected in the dialog project names.
      */
     selectedProjects: Array<String|null>|null;
+
+    /**
+     * Indicates that the export options panel is currently rendered.
+     */
+    _exportOptionsOpened: boolean|null|undefined;
+    _exportOptions: object|null|undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
+
+    /**
+     * Updates icon size CSS variable and notifies resize on the list when
+     * list type changes.
+     */
+    _updateListStyles(type: String|null): void;
 
     /**
      * Notifies the list that the resize event occurred.
@@ -183,50 +200,33 @@ declare namespace UiElements {
     _closeSelectionMenu(): void;
 
     /**
-     * Calles `_exportItems()` with default destination (`file`)
-     */
-    _exportSelected(): void;
-
-    /**
-     * Calles `_exportItems()` with destination set to `drive`
-     */
-    _exportSelectedDrive(): void;
-
-    /**
      * Forces main menu to close.
      */
     _closeMainMenu(): void;
 
     /**
-     * Menu handler to export all project data to Drive
+     * Toggles export options panel and sets export items to all currently loaded requests.
      */
-    _onExportAllDrive(): void;
+    openExportAll(): void;
+    _cancelExportOptions(): void;
 
     /**
-     * Menu handler to export all project data to file
-     */
-    _onExportAll(): void;
-
-    /**
-     * Requests application to export all data to `destination`.
-     * This works with `arc-data-export` element.
+     * Creates export file for all items.
      *
-     * @param destination One of the supporting destinations
-     * in `arc-data-export`.
+     * @returns Result of calling `_doExportItems()`
      */
-    _exportAll(destination: String|null): void;
+    _exportAllFile(): Promise<any>|null;
+    _acceptExportOptions(e: any): any;
 
     /**
-     * Dispatches `export-data` event and returns it.
+     * Calls `_dispatchExportData()` from requests lists mixin with
+     * prepared arguments
      *
-     * @param destination A place where export the data (file, drive)
+     * @param requests List of request to export with the project.
+     * @param detail Export configuration
      */
-    _dispatchExportData(destination: String|null, requests: Array<object|null>|Boolean|null): CustomEvent|null;
-
-    /**
-     * Dispatches the `export-project` event with relevant data.
-     */
-    _exportItems(destination: String|null): void;
+    _doExportItems(requests: any[]|null, detail: String|null): Promise<any>|null;
+    _onExportSelected(): void;
 
     /**
      * Handler for delete all menu option click.
@@ -301,6 +301,7 @@ declare namespace UiElements {
      */
     _createProjects(names: Array<String|null>|null, requestIds: Array<String|null>|null): Promise<Array<object|null>|null>;
     _prepareProjectsIdsList(created: any, ids: any): any;
+    _generateFileName(): any;
   }
 }
 

@@ -8,6 +8,10 @@
  *   saved-panel-list.html
  */
 
+
+// tslint:disable:variable-name Describing an API that's defined elsewhere.
+// tslint:disable:no-any describes the API as best we are able today
+
 /// <reference path="../polymer/types/polymer-element.d.ts" />
 /// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
 /// <reference path="../paper-item/paper-icon-item.d.ts" />
@@ -42,17 +46,6 @@ declare namespace ApiElements {
     requests: any[]|null|undefined;
 
     /**
-     * Changes information density of list items.
-     * By default it uses material's peper item with two lines (72px heigth)
-     * Possible values are:
-     *
-     * - `default` or empty - regular list view
-     * - `comfortable` - enables MD single line list item vie (52px heigth)
-     * - `compact` - enables list that has 40px heigth (touch recommended)
-     */
-    listType: string|null|undefined;
-
-    /**
      * A list lower treshold when the `history-list-threshold` will be
      * fired. It should informa the app that the user nearly reached
      * the end of the list and new items should be loaded.
@@ -70,7 +63,11 @@ declare namespace ApiElements {
      * List of selected items on the list.
      */
     selectedItems: any[]|null|undefined;
-    hasTwoLines: boolean|null|undefined;
+
+    /**
+     * When set the list items are rendered having 2 lines.
+     */
+    hasTwoLines: Boolean|null;
     connectedCallback(): void;
     disconnectedCallback(): void;
 
@@ -80,7 +77,6 @@ declare namespace ApiElements {
      * visible at the time.
      */
     notifyResize(): void;
-    _updateListStyles(type: any): void;
     _thresholdHandler(e: any): void;
     _requestsChanged(record: any): void;
     _requestDetails(e: any): void;
