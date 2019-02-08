@@ -42,7 +42,7 @@
     "projects-list-consumer-mixin": "advanced-rest-client/projects-list-consumer-mixin#^2.0.0",
     "paper-chip-input": "advanced-rest-client/paper-chip-input#^2.0.0",
     "saved-list-mixin": "advanced-rest-client/saved-list-mixin#^2.0.0",
-    "export-options": "advanced-rest-client/export-options#^2.0.0"
+    "export-options": "advanced-rest-client/export-options#^2.0.1"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",

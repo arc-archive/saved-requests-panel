@@ -47,6 +47,11 @@
     saved-requests-panel {
       height: calc(100vh - 320px);
     }
+
+    pre {
+      display: block;
+      white-space: pre-wrap;
+    }
     </style>
   </custom-style>
 </head>
@@ -84,7 +89,6 @@
       <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
       <paper-toast id="delToast" text="The request data has been removed"></paper-toast>
       <paper-toast id="navToast" text="Navigation ocurred"></paper-toast>
-      <paper-toast id="exportToast" text="Export requested."></paper-toast>
     </template>
   </dom-bind>
 
@@ -103,22 +107,6 @@
       msg += `, and id: ${id}`;
     }
     toast.text = msg;
-    toast.opened = true;
-  });
-
-  window.addEventListener('export-data', function(e) {
-    e.preventDefault();
-    e.detail.result = Promise.resolve({});
-    const toast = document.getElementById('exportToast');
-    toast.opened = true;
-  });
-
-  window.addEventListener('export-google-drive', function(e) {
-    e.preventDefault();
-    e.detail.result = Promise.resolve({
-      id: 'testId'
-    });
-    const toast = document.getElementById('exportToast');
     toast.opened = true;
   });
 

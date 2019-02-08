@@ -727,74 +727,6 @@
     });
   });
 
-  suite('_exportSelected()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Calles _exportItems() with "file" argument', () => {
-      const spy = sinon.spy(element, '_exportItems');
-      element._exportSelected();
-      assert.isTrue(spy.called);
-      assert.equal(spy.args[0][0], 'file');
-    });
-  });
-
-  suite('_exportSelectedDrive()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Calles _exportItems() with "drive" argument', () => {
-      const spy = sinon.spy(element, '_exportItems');
-      element._exportSelectedDrive();
-      assert.isTrue(spy.called);
-      assert.equal(spy.args[0][0], 'drive');
-    });
-  });
-
-  suite('_onExportAllDrive()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Calles _exportAll() with "drive" argument', () => {
-      const spy = sinon.spy(element, '_exportAll');
-      element._onExportAllDrive();
-      assert.isTrue(spy.called);
-      assert.equal(spy.args[0][0], 'drive');
-    });
-
-    test('Calles _closeMainMenu()', () => {
-      const spy = sinon.spy(element, '_closeMainMenu');
-      element._onExportAllDrive();
-      assert.isTrue(spy.called);
-    });
-  });
-
-  suite('_onExportAll()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Calles _exportAll() with "file" argument', () => {
-      const spy = sinon.spy(element, '_exportAll');
-      element._onExportAll();
-      assert.isTrue(spy.called);
-      assert.equal(spy.args[0][0], 'file');
-    });
-
-    test('Calles _closeMainMenu()', () => {
-      const spy = sinon.spy(element, '_closeMainMenu');
-      element._onExportAll();
-      assert.isTrue(spy.called);
-    });
-  });
-
   suite('_closeMainMenu()', () => {
     let element;
     let list;
@@ -827,161 +759,6 @@
         menu.selected = 1;
         element._closeMainMenu();
         assert.equal(menu.selected, -1);
-        done();
-      });
-    });
-  });
-
-  suite('_dispatchExportData()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Dispatches "export-data" event', () => {
-      const spy = sinon.spy();
-      element.addEventListener('export-data', spy);
-      element._dispatchExportData();
-      assert.isTrue(spy.called);
-    });
-
-    test('Returns the event', () => {
-      const result = element._dispatchExportData();
-      assert.typeOf(result, 'customevent');
-    });
-
-    test('Event is cancelable', () => {
-      const result = element._dispatchExportData();
-      assert.isTrue(result.cancelable);
-    });
-
-    test('Event is composed', () => {
-      const result = element._dispatchExportData();
-      if (typeof result.composed !== 'undefined') {
-        assert.isTrue(result.composed);
-      }
-    });
-
-    test('Event bubbles', () => {
-      const result = element._dispatchExportData();
-      assert.isTrue(result.bubbles);
-    });
-
-    test('Event has detail object', () => {
-      const result = element._dispatchExportData();
-      assert.typeOf(result.detail, 'object');
-    });
-
-    test('Detail has type', () => {
-      const result = element._dispatchExportData();
-      assert.equal(result.detail.type, 'arc-export');
-    });
-
-    test('Detail has destination', () => {
-      const result = element._dispatchExportData('test');
-      assert.equal(result.detail.destination, 'test');
-    });
-
-    test('Detail has file', () => {
-      const result = element._dispatchExportData();
-      assert.equal(result.detail.file, 'arc-saved-export.json');
-    });
-
-    test('Detail has kind', () => {
-      const result = element._dispatchExportData();
-      assert.equal(result.detail.kind, 'ARC#SavedExport');
-    });
-
-    test('Detail has data with "requests"', () => {
-      const result = element._dispatchExportData('test', true);
-      assert.typeOf(result.detail.data, 'object');
-      assert.isTrue(result.detail.data.requests);
-    });
-  });
-
-  suite('_exportAll()', () => {
-    let element;
-    setup(() => {
-      element = fixture('Basic');
-    });
-
-    test('Opens error toast when export not found', (done) => {
-      flush(() => {
-        element._exportAll('file');
-        const toast = element.shadowRoot.querySelector('#noExport');
-        assert.isTrue(toast.opened);
-        done();
-      });
-    });
-
-    test('Opens drive confirmation toast', (done) => {
-      element.addEventListener('export-data', function f(e) {
-        element.removeEventListener('export-data', f);
-        e.preventDefault();
-        e.detail.result = Promise.resolve();
-      });
-      element._exportAll('drive');
-      flush(() => {
-        const toast = element.shadowRoot.querySelector('#driveSaved');
-        assert.isTrue(toast.opened);
-        done();
-      });
-    });
-  });
-
-  suite('_exportItems()', () => {
-    let element;
-    let list;
-    setup(() => {
-      element = fixture('Basic');
-      list = [];
-      for (let i = 0; i < 5; i++) {
-        list[i] = {
-          _id: chance.guid({version: 5}),
-          _rev: chance.guid({version: 5})
-        };
-      }
-    });
-
-    test('Skips event dispatch when no selection', () => {
-      const spy = sinon.spy();
-      element.addEventListener('export-data', spy);
-      element._exportItems('file');
-      assert.isFalse(spy.called);
-    });
-
-    test('Dispatches export event when has selection', () => {
-      element.requests = list;
-      element.selectedItems = list;
-      const spy = sinon.spy();
-      element.addEventListener('export-data', spy);
-      element._exportItems('file');
-      assert.isTrue(spy.called);
-    });
-
-    test('Opens error toast when export not found', (done) => {
-      element.requests = list;
-      element.selectedItems = list;
-      flush(() => {
-        element._exportItems('file');
-        const toast = element.shadowRoot.querySelector('#noExport');
-        assert.isTrue(toast.opened);
-        done();
-      });
-    });
-
-    test('Opens drive confirmation toast', (done) => {
-      element.addEventListener('export-data', function f(e) {
-        element.removeEventListener('export-data', f);
-        e.preventDefault();
-        e.detail.result = Promise.resolve();
-      });
-      element.requests = list;
-      element.selectedItems = list;
-      element._exportItems('drive');
-      flush(() => {
-        const toast = element.shadowRoot.querySelector('#driveSaved');
-        assert.isTrue(toast.opened);
         done();
       });
     });
@@ -1386,6 +1163,210 @@
       .catch((cause) => {
         assert.equal(cause.message, 'The project-model is not in the DOM.');
       });
+    });
+  });
+
+  suite('openExportAll()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _closeMainMenu()', () => {
+      const spy = sinon.spy(element, '_closeMainMenu');
+      element.openExportAll();
+      assert.isTrue(spy.called);
+    });
+
+    test('Sets _exportOptionsOpened', () => {
+      element.openExportAll();
+      assert.isTrue(element._exportOptionsOpened);
+    });
+
+    test('Sets _exportItems', () => {
+      element.openExportAll();
+      assert.isTrue(element._exportItems);
+    });
+  });
+
+  suite('_cancelExportOptions()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element._exportOptionsOpened = true;
+      element._exportItems = true;
+    });
+
+    test('Sets _exportOptionsOpened', () => {
+      element._cancelExportOptions();
+      assert.isFalse(element._exportOptionsOpened);
+    });
+
+    test('Sets _exportItems', () => {
+      element._cancelExportOptions();
+      assert.isUndefined(element._exportItems);
+    });
+  });
+
+  suite('_exportAllFile()', () => {
+    function handler(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve();
+    }
+
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      window.addEventListener('arc-data-export', handler);
+    });
+
+    teardown(() => {
+      window.removeEventListener('arc-data-export', handler);
+    });
+
+    test('Calls _doExportItems()', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.isTrue(spy.called);
+      return result;
+    });
+
+    test('First argument is true', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.isTrue(spy.args[0][0]);
+      return result;
+    });
+
+    test('Second argument has options', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.typeOf(spy.args[0][1].options, 'object');
+      return result;
+    });
+
+    test('Options has file', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.equal(spy.args[0][1].options.file, element._generateFileName());
+      return result;
+    });
+
+    test('Options has kind', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.equal(spy.args[0][1].options.kind, 'ARC#SavedExport');
+      return result;
+    });
+
+    test('Options has provider', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._exportAllFile();
+      assert.equal(spy.args[0][1].options.provider, 'file');
+      return result;
+    });
+  });
+
+  suite('_acceptExportOptions()', () => {
+    function handler(e) {
+      e.preventDefault();
+      e.detail.result = Promise.resolve();
+    }
+
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      window.addEventListener('arc-data-export', handler);
+    });
+
+    teardown(() => {
+      window.removeEventListener('arc-data-export', handler);
+    });
+
+    test('Sets _exportOptionsOpened', () => {
+      const result = element._acceptExportOptions({
+        detail: {
+          options: {}
+        }
+      });
+      assert.isFalse(element._exportOptionsOpened);
+      return result;
+    });
+
+    test('Calls _doExportItems()', () => {
+      const spy = sinon.spy(element, '_doExportItems');
+      const result = element._acceptExportOptions({
+        detail: {
+          options: {}
+        }
+      });
+      assert.isTrue(spy.called);
+      return result;
+    });
+  });
+
+  suite('_updateListStyles()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _applyListStyles() for default type', () => {
+      const spy = sinon.spy(element, '_applyListStyles');
+      element._updateListStyles('default');
+      assert.equal(spy.args[0][0], 56);
+      assert.ok(spy.args[0][1]);
+    });
+
+    test('Calls _applyListStyles() for comfortable type', () => {
+      const spy = sinon.spy(element, '_applyListStyles');
+      element._updateListStyles('comfortable');
+      assert.equal(spy.args[0][0], 40);
+      assert.ok(spy.args[0][1]);
+    });
+
+    test('Calls _applyListStyles() for compact type', () => {
+      const spy = sinon.spy(element, '_applyListStyles');
+      element._updateListStyles('compact');
+      assert.equal(spy.args[0][0], 36);
+      assert.ok(spy.args[0][1]);
+    });
+  });
+
+  suite('_onExportSelected()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Calls _closeSelectionMenu()', () => {
+      const spy = sinon.spy(element, '_closeSelectionMenu');
+      element._onExportSelected();
+      assert.isTrue(spy.called);
+    });
+
+    test('Sets _exportOptionsOpened', () => {
+      element._onExportSelected();
+      assert.isTrue(element._exportOptionsOpened);
+    });
+
+    test('Sets _exportItems', () => {
+      element.selectedItems = [{test: true}];
+      element._onExportSelected();
+      assert.deepEqual(element._exportItems, element.selectedItems);
+    });
+  });
+
+  suite('_addSelectedProject()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Throws when no selection', () => {
+      assert.throws(() => {
+        element._addSelectedProject();
+      }, 'Something is wrong. There\'s no selection. You shouldn\'t see this.');
     });
   });
   </script>

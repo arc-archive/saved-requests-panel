@@ -162,10 +162,6 @@ the License.
     .project-selector-title {
       margin-left: 0;
     }
-
-    .export-options-form {
-      margin: 0 16px 0px 0px;
-    }
     </style>
     <div class="header">
       <h2>Saved</h2>
@@ -173,7 +169,7 @@ the License.
         <paper-menu-button dynamic-align id="mainMenu">
           <paper-icon-button icon="arc:more-vert" slot="dropdown-trigger"></paper-icon-button>
           <paper-listbox slot="dropdown-content" id="mainMenuOptions">
-            <paper-icon-item class="menu-item" on-click="toggleExportAll"><iron-icon icon="arc:export-variant" slot="item-icon"></iron-icon>Export all</paper-icon-item>
+            <paper-icon-item class="menu-item" on-click="openExportAll"><iron-icon icon="arc:export-variant" slot="item-icon"></iron-icon>Export all</paper-icon-item>
             <paper-icon-item class="menu-item" on-click="_deleteAllClick"><iron-icon icon="arc:delete" slot="item-icon"></iron-icon>Delete all</paper-icon-item>
           </paper-listbox>
         </paper-menu-button>
@@ -264,6 +260,7 @@ the License.
       <p>This will remove all data from the data store. Without option to restore it.</p>
       <p>Maybe you should create a backup first?</p>
       <div class="buttons">
+        <paper-button on-click="_exportAllFile">Create backup file</paper-button>
         <paper-button dialog-dismiss autofocus>Cancel</paper-button>
         <paper-button dialog-confirm class="action-button">Destroy</paper-button>
       </div>
@@ -376,9 +373,7 @@ the License.
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener('navigate', this._navigateHandler);
-      if (!this.type) {
-        this.type = 'saved';
-      }
+      this.type = 'saved';
       const input = this.shadowRoot.querySelector('paper-input[type="search"]');
       input.inputElement.addEventListener('search', this._searchHandler);
     }
@@ -396,11 +391,7 @@ the License.
      */
     notifyResize() {
       const list = this.shadowRoot.querySelector('saved-panel-list');
-      if (list) {
-        list.notifyResize();
-      } else {
-        console.warn('saved-panel-list not in the DOM');
-      }
+      list.notifyResize();
     }
     /**
      * Computes value of the `listHidden` property.
@@ -435,16 +426,7 @@ the License.
      * Fires `navigate` event for currently loaded in the details request.
      */
     _loadRequestDetails() {
-      this.dispatchEvent(new CustomEvent('navigate', {
-        bubbles: true,
-        composed: true,
-        cancelable: true,
-        detail: {
-          base: 'request',
-          type: this.type,
-          id: this.$.requestDetails.request._id
-        }
-      }));
+      this._openRequest(this.$.requestDetails.request._id);
       this.detailsOpened = false;
     }
     /**
@@ -592,7 +574,7 @@ the License.
     /**
      * Toggles export options panel and sets export items to all currently loaded requests.
      */
-    toggleExportAll() {
+    openExportAll() {
       this._closeMainMenu();
       this._exportOptionsOpened = !this._exportOptionsOpened;
       this._exportItems = true;
@@ -603,10 +585,38 @@ the License.
       this._exportItems = undefined;
     }
 
+    /**
+     * Creates export file for all items.
+     * @return {Promise} Result of calling `_doExportItems()`
+     */
+    _exportAllFile() {
+      const detail = {
+        options: {
+          file: this._generateFileName(),
+          kind: 'ARC#SavedExport',
+          provider: 'file'
+        }
+      };
+      return this._doExportItems(true, detail);
+    }
+
     _acceptExportOptions(e) {
+      this._exportOptionsOpened = false;
       const detail = e.detail;
+      return this._doExportItems(this._exportItems, detail);
+    }
+
+    /**
+     * Calls `_dispatchExportData()` from requests lists mixin with
+     * prepared arguments
+     *
+     * @param {Array} requests List of request to export with the project.
+     * @param {String} detail Export configuration
+     * @return {Promise}
+     */
+    _doExportItems(requests, detail) {
       detail.options.kind = 'ARC#SavedExport';
-      const request = this._dispatchExportData(this._exportItems, detail);
+      const request = this._dispatchExportData(requests, detail);
       return request.detail.result
       .then(() => {
         if (detail.options.provider === 'drive') {
@@ -769,11 +779,11 @@ the License.
      * @return {Promise}
      */
     _addSelectedProject() {
-      this.$.projectSelectorContainer.opened = false;
       const requests = this.selectedItems;
-      if (!requests) {
-        throw new Error('Something is wrong...');
+      if (!requests || !requests.length) {
+        throw new Error('Something is wrong. There\'s no selection. You shouldn\'t see this.');
       }
+      this.$.projectSelectorContainer.opened = false;
       const info = this._processSelectedProjectsInfo(this.selectedProjects);
       let p;
       if (info.add.length) {
