@@ -246,7 +246,7 @@ the License.
     </bottom-sheet>
 
     <bottom-sheet id="exportOptionsContainer" opened="{{_exportOptionsOpened}}" on-iron-overlay-opened="_resizeSheetContent">
-      <export-options file="{{_exportOptions.file}}" destination="{{_exportOptions.destination}}" drive="{{_exportOptions.drive}}" on-accept="_acceptExportOptions" on-cancel="_cancelExportOptions"></export-options>
+      <export-options file="{{_exportOptions.file}}" provider="{{_exportOptions.provider}}" provider-options="{{_exportOptions.providerOptions}}" on-accept="_acceptExportOptions" on-cancel="_cancelExportOptions"></export-options>
     </bottom-sheet>
 
     <paper-toast id="noModel" class="error-toast" text="Model not found. Please, report an issue."></paper-toast>
@@ -358,9 +358,9 @@ the License.
           value: function() {
             return {
               file: this._generateFileName(),
-              destination: 'file',
-              drive: {
-                parent: 'My Drive'
+              provider: 'file',
+              providerOptions: {
+                parents: ['My Drive']
               }
             };
           }
@@ -376,6 +376,9 @@ the License.
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener('navigate', this._navigateHandler);
+      if (!this.type) {
+        this.type = 'saved';
+      }
       const input = this.shadowRoot.querySelector('paper-input[type="search"]');
       input.inputElement.addEventListener('search', this._searchHandler);
     }
@@ -592,7 +595,7 @@ the License.
     toggleExportAll() {
       this._closeMainMenu();
       this._exportOptionsOpened = !this._exportOptionsOpened;
-      this._exportItems = this.requests || [];
+      this._exportItems = true;
     }
 
     _cancelExportOptions() {
@@ -601,77 +604,28 @@ the License.
     }
 
     _acceptExportOptions(e) {
-      const opts = e.detail;
-      return this._doExportItems(this._exportItems, opts)
+      const detail = e.detail;
+      detail.options.kind = 'ARC#SavedExport';
+      const request = this._dispatchExportData(this._exportItems, detail);
+      return request.detail.result
       .then(() => {
-        if (opts.destination === 'drive') {
+        if (detail.options.provider === 'drive') {
+          // TODO: Render link to the folder
           this.$.driveSaved.opened = true;
         }
         this._exportItems = undefined;
+      })
+      .catch((cause) => {
+        this.$.errorToast.text = cause.message;
+        this.$.errorToast.opened = true;
+        console.warn(cause);
       });
     }
 
     _onExportSelected() {
+      this._closeSelectionMenu();
       this._exportOptionsOpened = true;
       this._exportItems = this.selectedItems || [];
-    }
-    /**
-     * Dispatches the `export-data` event with relevant data.
-     *
-     * @param {Array} requests List of request to export with the project.
-     * @param {Object} opts List of export options defined in `export-options`
-     * element:
-     * - destination - name of the destination, `drive` or `file`
-     * - file - name of the file
-     * - skipImport - Skips import table when opening the file
-     * - drive - list of Google Drive options:
-     *   - parents - list of parents definitions
-     * @return {Promise}
-     */
-    _doExportItems(requests, opts) {
-      // const e = this._dispatchExportData(destination, requests);
-      // if (!e.defaultPrevented) {
-      //   this.$.noExport.opened = true;
-      //   return Promise.reject(new Error('No export module.'));
-      // }
-      // return e.detail.result
-      // .then(() => {
-      //   if (opts.destination === 'drive') {
-      //     this.$.driveSaved.opened = true;
-      //   }
-      // })
-      // .catch((cause) => {
-      //   if (!cause || !cause.message) {
-      //     return;
-      //   }
-      //   console.warn(cause);
-      //   this.$.exportError.text = cause.message;
-      //   this.$.exportError.opened = true;
-      // });
-    }
-    /**
-     * Dispatches `export-data` event and returns it.
-     * @param {String} destination A place where export the data (file, drive)
-     * @param {Array<Object>|Boolean} requests
-     * @return {CustomEvent}
-     */
-    _dispatchExportData(destination, requests) {
-      const e = new CustomEvent('export-data', {
-        cancelable: true,
-        composed: true,
-        bubbles: true,
-        detail: {
-          type: 'arc-export',
-          destination,
-          file: 'arc-saved-export.json',
-          kind: 'ARC#SavedExport',
-          data: {
-            requests
-          }
-        }
-      });
-      this.dispatchEvent(e);
-      return e;
     }
     /**
      * Handler for delete all menu option click.
