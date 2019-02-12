@@ -162,6 +162,15 @@ the License.
     .project-selector-title {
       margin-left: 0;
     }
+
+    .project-actions paper-button {
+      color: var(--saved-request-editor-action-button-color, var(--primary-color));
+      background-color: var(--saved-request-editor-action-button-background-color);
+    }
+
+    .project-actions .primary-action {
+      @apply --action-button;
+    }
     </style>
     <div class="header">
       <h2>Saved</h2>
@@ -235,10 +244,11 @@ the License.
         label="Select projects"
         value="{{selectedProjects}}"
         source="[[_computeProjectsAutocomplete(projects)]]"
-        chip-remove-icon="arc:close"></paper-chip-input>
+        chip-remove-icon="arc:close"
+        on-keydown="_projectAddKeydown"></paper-chip-input>
       <div class="project-actions">
         <paper-button data-action="cancel-add-project" on-click="cancelAddProject">Cancel</paper-button>
-        <paper-button raised data-action="project-add" on-click="_addSelectedProject">Add</paper-button>
+        <paper-button raised data-action="project-add" class="primary-action" on-click="_addSelectedProject">Add</paper-button>
       </div>
     </bottom-sheet>
 
@@ -877,6 +887,19 @@ the License.
 
     _generateFileName() {
       return 'arc-saved-export.json';
+    }
+    /**
+     * Listens for Enter + cmd/ctrl button to accept project selection.
+     * @param {KeyboardEvent} e
+     */
+    _projectAddKeydown(e) {
+      if (e.key !== 'Enter') {
+        return;
+      }
+      if (!e.metaKey && !e.ctrlKey) {
+        return;
+      }
+      this._addSelectedProject();
     }
   }
   window.customElements.define(SavedRequestsPanel.is, SavedRequestsPanel);

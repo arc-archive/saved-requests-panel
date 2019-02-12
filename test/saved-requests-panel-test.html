@@ -1369,6 +1369,38 @@
       }, 'Something is wrong. There\'s no selection. You shouldn\'t see this.');
     });
   });
+
+  suite('_projectAddKeydown()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+      element._addSelectedProject = () => {};
+    });
+
+    test('Ignores key when not Enter key', () => {
+      const spy = sinon.spy(element, '_addSelectedProject');
+      element._projectAddKeydown({key: 'a'});
+      assert.isFalse(spy.called);
+    });
+
+    test('Ignores key when no ctrl/cmd', () => {
+      const spy = sinon.spy(element, '_addSelectedProject');
+      element._projectAddKeydown({key: 'Enter', ctrlKey: false, metaKey: false});
+      assert.isFalse(spy.called);
+    });
+
+    test('Calls _addSelectedProject() when ctrl', () => {
+      const spy = sinon.spy(element, '_addSelectedProject');
+      element._projectAddKeydown({key: 'Enter', ctrlKey: true, metaKey: false});
+      assert.isTrue(spy.called);
+    });
+
+    test('Calls _addSelectedProject() when meta', () => {
+      const spy = sinon.spy(element, '_addSelectedProject');
+      element._projectAddKeydown({key: 'Enter', ctrlKey: false, metaKey: true});
+      assert.isTrue(spy.called);
+    });
+  });
   </script>
 </body>
 
