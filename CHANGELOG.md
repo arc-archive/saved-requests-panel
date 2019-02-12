@@ -168,3 +168,24 @@
 
 
 
+## [2.0.1](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.9...2.0.1) (2019-02-12)
+
+
+### Docs
+
+* Updating polymer docs ([63c41b11afb9b3a9ce28fbd707ed66537c72846b](https://github.com/advanced-rest-client/saved-requests-panel/commit/63c41b11afb9b3a9ce28fbd707ed66537c72846b))
+* Updating typpings and Polymer docs ([99a66121a939b4a1941973e0d1ccfda071bce6f5](https://github.com/advanced-rest-client/saved-requests-panel/commit/99a66121a939b4a1941973e0d1ccfda071bce6f5))
+
+### New
+
+* Adding support for ctrl/meta keys when adding to project (enter) ([9db3309fa265c08ce20be6c09337c0a9922c62b7](https://github.com/advanced-rest-client/saved-requests-panel/commit/9db3309fa265c08ce20be6c09337c0a9922c62b7))
+* Adding support for experimental drag and drop ([75186a605efe192d19770194c756090d2bf8e6cb](https://github.com/advanced-rest-client/saved-requests-panel/commit/75186a605efe192d19770194c756090d2bf8e6cb))
+
+### Update
+
+* Adding saved-list-mixin ([5396c687df2490d2cb3111eccb6b7b7af75f8e9f](https://github.com/advanced-rest-client/saved-requests-panel/commit/5396c687df2490d2cb3111eccb6b7b7af75f8e9f))
+* Removing old CI files ([d12f70aaf5acf6c4bed90aefd96268ce96534baa](https://github.com/advanced-rest-client/saved-requests-panel/commit/d12f70aaf5acf6c4bed90aefd96268ce96534baa))
+* Updating the component to new API ([20cea1de164ffb5e84cab99ae2d8a203b01befd6](https://github.com/advanced-rest-client/saved-requests-panel/commit/20cea1de164ffb5e84cab99ae2d8a203b01befd6))
+
+
+
