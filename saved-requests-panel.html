@@ -211,6 +211,7 @@ the License.
       list-type$="[[listType]]"
       has-two-lines="[[_hasTwoLines]]"
       selected-items="{{selectedItems}}"
+      draggable-enabled="[[draggableEnabled]]"
       on-list-items-threshold="loadNext"
       on-list-item-details="_onDetails"></saved-panel-list>
 
@@ -346,6 +347,10 @@ the License.
          * @type {Array<String>}
          */
         selectedProjects: Array,
+        /**
+         * Enables the comonent to accept drop action with a request.
+         */
+        draggableEnabled: {type: Boolean},
         /**
          * Indicates that the export options panel is currently rendered.
          */
