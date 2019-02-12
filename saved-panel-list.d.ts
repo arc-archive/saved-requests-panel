@@ -68,8 +68,18 @@ declare namespace ApiElements {
      * When set the list items are rendered having 2 lines.
      */
     hasTwoLines: Boolean|null;
+
+    /**
+     * Adds draggable property to the request list item element.
+     * The `dataTransfer` object has `arc/request-object` mime type with
+     * serialized JSON with request model.
+     */
+    draggableEnabled: boolean|null|undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
+    _draggableChanged(value: any): void;
+    _addDndEvents(): void;
+    _removeDndEvents(): void;
 
     /**
      * Notifies the list that the resize event occurred.
@@ -90,6 +100,52 @@ declare namespace ApiElements {
      * @returns Item class name dependeing on selection state
      */
     _computeRowClass(selected: Boolean|null): String|null;
+
+    /**
+     * Handler for the `dragstart` event added to the list item when `draggableEnabled`
+     * is set to true.
+     * This function sets request data on the `dataTransfer` object with `arc/request-object`
+     * mime type. The request data is a serialized JSON with request model.
+     */
+    _dragStart(e: Event|null): void;
+
+    /**
+     * Computes value for the `draggable` property of the list item.
+     * When `draggableEnabled` is set it returns true which is one of the
+     * conditions to enable drag and drop on an element.
+     *
+     * @param draggableEnabled Current value of `draggableEnabled`
+     * @returns `true` or `false` (as string) depending on the argument.
+     */
+    _computeDraggableValue(draggableEnabled: Boolean|null): String|null;
+
+    /**
+     * Handler for `dragover` event on this element. If the dagged item is compatible
+     * it renders drop message.
+     */
+    _dragoverHandler(e: DragEvent|null): void;
+
+    /**
+     * Handler for `dragleave` event on this element. If the dagged item is compatible
+     * it hides drop message.
+     */
+    _dragleaveHandler(e: DragEvent|null): void;
+
+    /**
+     * Handler for `drag` event on this element. If the dagged item is compatible
+     * it adds request to saved requests.
+     */
+    _dropHandler(e: DragEvent|null): void;
+
+    /**
+     * Dispatches (by calling `_dispatch() function`) `save-request` event
+     * which is handled by request model to create new request.
+     * The function do not need to do anything else since request change listeners
+     * will insert the request to the list when saved.
+     *
+     * @param request The request to store.
+     */
+    _appendRequest(request: object|null): CustomEvent|null;
   }
 }
 

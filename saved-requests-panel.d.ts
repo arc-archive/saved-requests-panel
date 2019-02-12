@@ -108,6 +108,11 @@ declare namespace UiElements {
     selectedProjects: Array<String|null>|null;
 
     /**
+     * Enables the comonent to accept drop action with a request.
+     */
+    draggableEnabled: boolean|null|undefined;
+
+    /**
      * Indicates that the export options panel is currently rendered.
      */
     _exportOptionsOpened: boolean|null|undefined;
@@ -302,6 +307,11 @@ declare namespace UiElements {
     _createProjects(names: Array<String|null>|null, requestIds: Array<String|null>|null): Promise<Array<object|null>|null>;
     _prepareProjectsIdsList(created: any, ids: any): any;
     _generateFileName(): any;
+
+    /**
+     * Listens for Enter + cmd/ctrl button to accept project selection.
+     */
+    _projectAddKeydown(e: KeyboardEvent|null): void;
   }
 }
 
