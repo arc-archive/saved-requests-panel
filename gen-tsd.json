@@ -3,6 +3,7 @@
     "tasks/*",
     "demo/*",
     "test/*",
+    "coverage/**",
     "index.html"
   ]
 }

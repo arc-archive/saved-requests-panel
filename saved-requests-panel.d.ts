@@ -5,36 +5,12 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   saved-requests-panel.html
+ *   saved-requests-panel.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
-
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../polymer/types/lib/utils/render-status.d.ts" />
-/// <reference path="../iron-flex-layout/iron-flex-layout.d.ts" />
-/// <reference path="../paper-button/paper-button.d.ts" />
-/// <reference path="../iron-icon/iron-icon.d.ts" />
-/// <reference path="../arc-icons/arc-icons.d.ts" />
-/// <reference path="../paper-menu-button/paper-menu-button.d.ts" />
-/// <reference path="../paper-icon-button/paper-icon-button.d.ts" />
-/// <reference path="../paper-listbox/paper-listbox.d.ts" />
-/// <reference path="../paper-item/paper-icon-item.d.ts" />
-/// <reference path="../paper-progress/paper-progress.d.ts" />
-/// <reference path="../paper-toast/paper-toast.d.ts" />
-/// <reference path="../paper-dialog/paper-dialog.d.ts" />
-/// <reference path="../bottom-sheet/bottom-sheet.d.ts" />
-/// <reference path="../saved-request-detail/saved-request-detail.d.ts" />
-/// <reference path="../saved-request-editor/saved-request-editor.d.ts" />
-/// <reference path="../paper-fab/paper-fab.d.ts" />
-/// <reference path="../requests-list-mixin/requests-list-mixin.d.ts" />
-/// <reference path="../projects-list-consumer-mixin/projects-list-consumer-mixin.d.ts" />
-/// <reference path="../paper-chip-input/paper-chip-input.d.ts" />
-/// <reference path="../saved-list-mixin/saved-list-mixin.d.ts" />
-/// <reference path="../export-options/export-options.d.ts" />
-/// <reference path="saved-panel-list.d.ts" />
 
 declare namespace UiElements {
 
@@ -49,27 +25,18 @@ declare namespace UiElements {
    *
    * Custom property | Description | Default
    * ----------------|-------------|----------
-   * `--saved-requests-panel` | Mixin applied to the element | `{}`
-   * `--arc-font-headline` | Mixin applied to the header | `{}`
-   * `--arc-font-subhead` | Mixin applied to the subheader | `{}`
-   * `--saved-requests-panel-loader` | Mixin applied to the loader element | `{}`
-   * `--saved-requests-panel-list` | Mixin apllied to the list element | `{}`
-   * `--saved-requests-panel-toast-revert-button` | Mixin appllied to the revert button in the data delete confirmation toast | `{}`
    * `--warning-primary-color` | Main color of the warning messages | `#FF7043`
    * `--warning-contrast-color` | Contrast color for the warning color | `#fff`
-   * `--error-toast` | Mixin applied to the error toast | `{}`
-   * `--empty-info` | Mixin applied to the label rendered when no data is available. | `{}`
    * `--saved-requests-panel-fab-background-color` | Color of the fab button in the details panel | `--primary-color`
-   * `--saved-requests-panel-bottom-sheet` | Mixin apllied to the `<bottom-sheet>` elements | `{}`
    * `--context-menu-item-color` | Color of the dropdown menu items | ``
    * `--context-menu-item-background-color` | Background olor of the dropdown menu items | ``
    * `--context-menu-item-color-hover` | Color of the dropdown menu items when hovering | ``
    * `--context-menu-item-background-color-hover` | Background olor of the dropdown menu items when hovering | ``
    */
   class SavedRequestsPanel extends
-    ArcComponents.RequestsListMixin(
-    ArcComponents.ProjectsListConsumerMixin(
-    ArcComponents.SavedListMixin(
+    RequestsListMixin(
+    ProjectsListConsumerMixin(
+    SavedListMixin(
     Object))) {
 
     /**
@@ -119,12 +86,6 @@ declare namespace UiElements {
     _exportOptions: object|null|undefined;
     connectedCallback(): void;
     disconnectedCallback(): void;
-
-    /**
-     * Updates icon size CSS variable and notifies resize on the list when
-     * list type changes.
-     */
-    _updateListStyles(type: String|null): void;
 
     /**
      * Notifies the list that the resize event occurred.
@@ -306,6 +267,12 @@ declare namespace UiElements {
      */
     _createProjects(names: Array<String|null>|null, requestIds: Array<String|null>|null): Promise<Array<object|null>|null>;
     _prepareProjectsIdsList(created: any, ids: any): any;
+
+    /**
+     * Updates icon size CSS variable and notifies resize on the list when
+     * list type changes.
+     */
+    _updateListStyles(type: String|null): void;
     _generateFileName(): any;
 
     /**
@@ -315,6 +282,11 @@ declare namespace UiElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "saved-requests-panel": UiElements.SavedRequestsPanel;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "saved-requests-panel": UiElements.SavedRequestsPanel;
+  }
 }
+
+export {};
