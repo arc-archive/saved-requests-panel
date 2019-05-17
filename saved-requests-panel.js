@@ -907,9 +907,22 @@ class SavedRequestsPanel extends SavedListMixin(ProjectsListConsumerMixin(
     const list = this.shadowRoot.querySelector('saved-panel-list');
     this._applyListStyles(size, list);
   }
-
+  /**
+   * Generates file name for the export options panel.
+   * @return {String}
+   */
   _generateFileName() {
-    return 'arc-saved-export.json';
+    const d = new Date();
+    const year = d.getFullYear();
+    let month = d.getMonth() + 1;
+    let day = d.getDate();
+    if (month < 10) {
+      month = '0' + month;
+    }
+    if (day < 10) {
+      day = '0' + day;
+    }
+    return `arc-saved-export-${year}-${month}-${day}.arc`;
   }
   /**
    * Listens for Enter + cmd/ctrl button to accept project selection.

@@ -1212,6 +1212,18 @@
     });
   });
 
+  suite('_generateFileName()', () => {
+    let element;
+    setup(() => {
+      element = fixture('Basic');
+    });
+
+    test('Generates file name', () => {
+      const result = element._generateFileName();
+      assert.match(result, /^arc-saved-export-[0-9]{4}-[0-9]{2}-[0-9]{2}.arc$/);
+    });
+  });
+
   suite('_exportAllFile()', () => {
     function handler(e) {
       e.preventDefault();
