@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>history-panel test</title>
+
+  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../../@polymer/test-fixture/test-fixture.js"></script>
+  <script src="../../../mocha/mocha.js"></script>
+  <script src="../../../chai/chai.js"></script>
+  <script src="../../../wct-mocha/wct-mocha.js"></script>
+
+  <script src="../../../web-animations-js/web-animations-next.min.js"></script>
+</head>
+<body>
+  <test-fixture id="Basic">
+    <template>
+      <saved-requests-panel no-auto no-auto-projects></saved-requests-panel>
+    </template>
+  </test-fixture>
+
+  <script type="module">
+  import '../saved-requests-panel.js';
+
+  suite('Export panel propertis', () => {
+    let element;
+    setup((done) => {
+      element = fixture('Basic');
+      flush(() => {
+        element.openExportAll();
+        done();
+      });
+    });
+
+    test('_exportOptions are set on the panel', () => {
+      assert.typeOf(element._exportOptions, 'object', 'Object is set');
+      assert.match(element._exportOptions.file,
+        /^arc-saved-export-[0-9]{4}-[0-9]{2}-[0-9]{2}.arc$/, 'File name is set');
+      assert.equal(element._exportOptions.provider, 'file', 'Export provider is set');
+      assert.typeOf(element._exportOptions.providerOptions, 'object', 'provider options is set');
+      assert.deepEqual(element._exportOptions.providerOptions.parents, ['My Drive'], 'Default parent is set');
+    });
+
+    test('File property is set on export panel', () => {
+      const node = element.shadowRoot.querySelector('export-options');
+      assert.match(node.file,
+        /^arc-saved-export-[0-9]{4}-[0-9]{2}-[0-9]{2}.arc$/);
+    });
+
+    test('Provider property is set on export panel', () => {
+      const node = element.shadowRoot.querySelector('export-options');
+      assert.equal(node.provider, 'file');
+    });
+
+    test('provider-options property is set on export panel', () => {
+      const node = element.shadowRoot.querySelector('export-options');
+      assert.deepEqual(node.providerOptions, {
+        parents: ['My Drive']
+      });
+    });
+  });
+  </script>
+</body>
+</html>
