@@ -1,258 +1,84 @@
-<!DOCTYPE html><html><head>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
-  <title>saved-requests-panel demo</title>
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>ARC saved screen demo</title>
+  <script src="../node_modules/web-animations-js/web-animations.min.js"></script>
+  <script src="../node_modules/codemirror/lib/codemirror.js"></script>
+  <script src="../node_modules/codemirror/addon/mode/loadmode.js"></script>
+  <script src="../node_modules/codemirror/mode/meta.js"></script>
+  <script src="../node_modules/codemirror/mode/markdown/markdown.js"></script>
+  <script>
+  /* global CodeMirror */
+  CodeMirror.modeURL = '../node_modules/codemirror/mode/%N/%N.js';
+  </script>
+  <style>
+  body.styled {
+    --anypoiont-dropdown-shaddow: 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  }
 
-  <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
-  <script src="../../../web-animations-js/web-animations-next.min.js"></script>
+  .centered[role="main"] {
+    max-width: 1400px;
+  }
 
-  <script type="module" src="../../../@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
-  <script type="module" src="../../../@polymer/iron-demo-helpers/demo-snippet.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-data-export/arc-data-export.js"></script>
-  <script type="module" src="../../../@polymer/polymer/lib/elements/dom-bind.js"></script>
-  <script type="module" src="../../../@webcomponents/shadycss/entrypoints/apply-shim.js"></script>
-  <script type="module" src="../../../@polymer/polymer/lib/elements/custom-style.js"></script>
-  <script type="module" src="../../../@polymer/iron-demo-helpers/demo-pages-shared-styles.js"></script>
-  <script type="module" src="../../../@polymer/paper-toast/paper-toast.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-models/request-model.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-models/project-model.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-models/url-indexer.js"></script>
-  <script type="module" src="../../../@polymer/paper-dropdown-menu/paper-dropdown-menu.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/bottom-sheet/bottom-sheet.js"></script>
-  <script type="module" src="../../../@advanced-rest-client/arc-electron-default-theme/arc-electron-default-theme.js"></script>
-  <script type="module" src="../saved-requests-panel.js"></script>
+  saved-requests-panel {
+    height: 800px;
+    width: 600px;
+  }
 
-  <custom-style>
-    <style include="demo-pages-shared-styles">
-    html,
-    body {
-      background-color: #e5e5e5;
-      margin: 0;
-      padding: 0;
-    }
+  pre {
+    display: block;
+    white-space: pre-wrap;
+  }
 
-    .card {
-      @apply --shadow-elevation-4dp;
-      padding: 20px;
-      box-sizing: border-box;
-      background-color: #fff;
-      margin-top: 20px;
-      margin-bottom: 20px;
-      max-width: 1100px;
-    }
+  #dragOutput {
+    display: block;
+    padding: 8px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background-color: #FFF8E1;
+  }
 
-    saved-requests-panel {
-      height: calc(100vh - 320px);
-    }
+  .drop-target {
+    border: 2px transparent dashed;
+    box-sizing: border-box;
+    text-align: center;
+    padding: 20px;
+    border: 1px #e5e5e5 solid;
+  }
 
-    pre {
-      display: block;
-      white-space: pre-wrap;
-    }
-    </style>
-  </custom-style>
+  .drop-target.drag-over {
+    border-color: #8BC34A;
+  }
+
+  output {
+    display: block;
+    text-align: left;
+    white-space: pre-wrap;
+  }
+
+  history-menu {
+    height: 600px;
+    width: 300px;
+  }
+
+  .menu-item {
+    margin: 0 20px;
+  }
+
+  .menus-wrapper {
+    display: flex;
+    flex-direction: row;
+  }
+  </style>
 </head>
-<body unresolved="">
-  <dom-bind id="demo">
-    <template is="dom-bind">
-      <section class="centered card">
-        <saved-requests-panel id="panel" list-type="[[listType]]"></saved-requests-panel>
-      </section>
 
-      <section class="centered card">
-        <paper-button on-click="generate">Generate 100 requests</paper-button>
-        <paper-button on-click="delete">Clear list</paper-button>
-        <paper-button on-click="refresh">Refresh list</paper-button>
-        <paper-button on-click="changed">Inform first item changed</paper-button>
-        <paper-button on-click="deleted">Inform first item deleted</paper-button>
-        <paper-button on-click="addNew">Add new saved item</paper-button>
-
-        <paper-dropdown-menu label="Select list type">
-          <paper-listbox slot="dropdown-content" attr-for-selected="data-value" selected="{{listType}}">
-            <paper-item data-value="default">Default</paper-item>
-            <paper-item data-value="comfortable">Comfortable</paper-item>
-            <paper-item data-value="compact">Compact</paper-item>
-          </paper-listbox>
-        </paper-dropdown-menu>
-      </section>
-
-      <bottom-sheet opened="{{exportSheetOpened}}">
-        <h3>Export demo</h3>
-        <p>This is a preview of the file. Normally export module would save this data to file / Drive.</p>
-        <p>File: [[exportFile]]</p>
-        <pre>[[exportData]]</pre>
-      </bottom-sheet>
-
-      <paper-toast id="genToast" text="The request data has been generated"></paper-toast>
-      <paper-toast id="delToast" text="The request data has been removed"></paper-toast>
-      <paper-toast id="navToast" text="Navigation ocurred"></paper-toast>
-    </template>
-  </dom-bind>
-
-  <arc-data-export app-version="demo-page"></arc-data-export>
-  <project-model></project-model>
-  <request-model></request-model>
-  <url-indexer></url-indexer>
-  <script type="module">
-  import {DataGenerator} from '../../arc-data-generator/arc-data-generator.js';
-  import {afterNextRender} from '../../../@polymer/polymer/lib/utils/render-status.js';
-  window.addEventListener('navigate', function(e) {
-    const toast = document.getElementById('navToast');
-    const {base, id} = e.detail;
-    let msg = `Navigation ocurred to: ${base}`;
-    if (id) {
-      msg += `, and id: ${id}`;
-    }
-    toast.text = msg;
-    toast.opened = true;
-  });
-
-  (function(scope) {
-    scope.refresh = function() {
-      document.getElementById('panel').refresh();
-    };
-
-    scope.generate = function() {
-      DataGenerator.insertSavedRequestData({
-        requestsSize: 100
-      })
-      .then((data) => {
-        data.requests.forEach((item) => {
-          item.type = 'saved';
-          document.body.dispatchEvent(new CustomEvent('request-object-changed', {
-            bubbles: true,
-            detail: {
-              request: item
-            }
-          }));
-        });
-        document.getElementById('genToast').opened = true;
-      });
-    };
-
-    scope.delete = function() {
-      const e = new CustomEvent('destroy-model', {
-        detail: {
-          models: ['saved-requests']
-        },
-        bubbles: true
-      });
-      document.body.dispatchEvent(e);
-    };
-
-    scope.changed = function() {
-      const panel = document.getElementById('panel');
-      let item = panel.requests[0];
-      item = Object.assign({}, item);
-      item.updated = Date.now();
-      item.name = 'New name ' + Date.now();
-      const e = new CustomEvent('request-object-changed', {
-        detail: {
-          request: item,
-          type: 'saved'
-        },
-        bubbles: true
-      });
-      document.body.dispatchEvent(e);
-    };
-
-    scope.deleted = function() {
-      const panel = document.getElementById('panel');
-      let item = panel.requests[0];
-      const e = new CustomEvent('request-object-deleted', {
-        detail: {
-          oldRev: item._rev,
-          id: item._id,
-          type: 'saved'
-        },
-        bubbles: true
-      });
-      document.body.dispatchEvent(e);
-    };
-
-    scope.addNew = () => {
-      const item = DataGenerator.generateSavedItem();
-      item.update = Date.now();
-      const e = new CustomEvent('request-object-changed', {
-        detail: {
-          request: item,
-          type: 'saved'
-        },
-        bubbles: true
-      });
-      document.body.dispatchEvent(e);
-    };
-
-    scope._fileExportHandler = function(e) {
-      const {content, file} = e.detail;
-      afterNextRender(scope, () => {
-        scope.exportData = JSON.stringify(content, null, 2);
-        scope.exportFile = file;
-        scope.exportSheetOpened = true;
-      });
-      e.preventDefault();
-    };
-    window.addEventListener('file-data-save', scope._fileExportHandler);
-    window.addEventListener('google-drive-data-save', scope._fileExportHandler);
-  })(document.getElementById('demo'));
-  //
-  //
-  // /* global DataGenerator */
-  // window.addEventListener('navigate', function(e) {
-  //   var toast = document.getElementById('navToast');
-  //   var d = e.detail;
-  //   toast.text = 'Navigation ocurred to: ' + d.base + ', and id: ' + d.id;
-  //   toast.opened = true;
-  // });
-  // (function(scope) {
-  //   scope.generate = function() {
-  //     DataGenerator.insertSavedRequestData({
-  //       requestsSize: 1000
-  //     })
-  //     .then(() => {
-  //       document.getElementById('genToast').opened = true;
-  //       var e = new CustomEvent('data-imported', {
-  //         bubbles: true
-  //       });
-  //       document.body.dispatchEvent(e);
-  //     });
-  //   };
-  //   scope.delete = function() {
-  //     DataGenerator.destroySavedRequestData()
-  //     .then(() => {
-  //       document.getElementById('delToast').opened = true;
-  //       var e = new CustomEvent('datastore-destroyed', {
-  //         bubbles: true,
-  //         detail: {
-  //           datastore: 'legacy-projects'
-  //         }
-  //       });
-  //       document.body.dispatchEvent(e);
-  //     });
-  //   };
-  //   // Mock the Google Drive save controller.
-  //   document.body.addEventListener('drive-request-save', function(e) {
-  //     e.preventDefault();
-  //     e.detail.result = new Promise(resolve => {
-  //       resolve({
-  //         id: 'test-id'
-  //       });
-  //     });
-  //   });
-  //
-  //   window.addEventListener('google-autorize', function() {
-  //     document.body.dispatchEvent(new CustomEvent('google-signin-success', {bubbles: true}));
-  //   });
-  //   window.addEventListener('export-data', function(e) {
-  //     e.preventDefault();
-  //     e.detail.result = Promise.resolve({});
-  //   });
-  //   window.addEventListener('google-drive-data-save', function(e) {
-  //     e.preventDefault();
-  //     e.detail.result = Promise.resolve({});
-  //   });
-  // })(document.getElementById('app'));
+<body>
+  <div id="demo"></div>
+  <script type="module" src="index.js"></script>
   </script>
 </body>
+
 </html>
