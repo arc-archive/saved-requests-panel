@@ -153,7 +153,6 @@ export class SavedRequestsPanel extends SavedListMixin(ProjectsListConsumerMixin
       <anypoint-chip-input
         .source="${source}"
         ?compatibility="${compatibility}"
-        chipremoveicon="arc:close"
         .chipsValue="${selectedProjects}"
         @keydown="${this._projectAddKeydown}"
         @chips-changed="${this._projectsHandler}">
