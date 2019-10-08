@@ -19,6 +19,7 @@ import { ProjectsListConsumerMixin } from
 import { SavedListMixin } from '@advanced-rest-client/saved-list-mixin/saved-list-mixin.js';
 import { cache } from 'lit-html/directives/cache.js';
 import '@anypoint-web-components/anypoint-chip-input/anypoint-chip-input.js';
+import { collectionsBookmark } from '@advanced-rest-client/arc-icons/ArcIcons.js';
 import '../saved-panel-list.js';
 /**
  * Saved requests panel for ARC.
@@ -91,6 +92,13 @@ export class SavedRequestsPanel extends SavedListMixin(ProjectsListConsumerMixin
       .project-selector-title {
         margin-left: 0;
       }
+
+      .icon {
+        width: 24px;
+        height: 24px;
+        display: inline-block;
+        fill: currentColor;
+      }
       `
     ];
   }
@@ -113,8 +121,9 @@ export class SavedRequestsPanel extends SavedListMixin(ProjectsListConsumerMixin
     <anypoint-icon-item
       class="menu-item"
       data-action="project-selected"
-      @click="${this._projectSelected}">
-      <iron-icon icon="arc:collections-bookmark" slot="item-icon"></iron-icon>
+      @click="${this._projectSelected}"
+    >
+      <span class="icon" slot="item-icon">${collectionsBookmark}</span>
       Add selected to a project
     </anypoint-icon-item>`;
   }

@@ -14,6 +14,7 @@ the License.
 import { html, css } from 'lit-element';
 import { HistoryPanelList } from '@advanced-rest-client/history-panel/src/HistoryPanelList.js';
 import '@advanced-rest-client/history-panel/history-panel-list.js';
+import { saveAlt } from '@advanced-rest-client/arc-icons/ArcIcons.js';
 /**
  * `saved-panel-list`
  *
@@ -57,6 +58,8 @@ export class SavedPanelList extends HistoryPanelList {
       .drop-icon {
         width: 72px;
         height: 72px;
+        display: inline-block;
+        fill: currentColor;
       }
 
       :host(.drop-target) .drop-message {
@@ -69,7 +72,7 @@ export class SavedPanelList extends HistoryPanelList {
 
   _dropTargetTemplate() {
     return html`<div class="drop-message">
-      <iron-icon icon="arc:save-alt" class="drop-icon"></iron-icon>
+      <span class="drop-icon">${saveAlt}</span>
       <p>Drop request here</p>
     </div>`;
   }
