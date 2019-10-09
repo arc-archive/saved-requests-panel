@@ -197,3 +197,7 @@
 
 
 
+## [3.0.1](https://github.com/advanced-rest-client/saved-requests-panel/compare/0.2.9...3.0.1) (2019-10-09)
+
+
+
